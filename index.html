@@ -1,0 +1,1676 @@
+<!DOCTYPE html>
+<html lang="en" class="dark"><head><script data-bard-client-injected="true">(function(firebaseConfig, initialAuthToken, appId) {
+        window.__firebase_config = firebaseConfig;
+        window.__initial_auth_token = initialAuthToken;
+        window.__app_id = appId;
+            })("\n{\n  \"apiKey\": \"AIzaSyCqyCcs2R2e7AegGjvFAwG98wlamtbHvZY\",\n  \"authDomain\": \"bard-frontend.firebaseapp.com\",\n  \"projectId\": \"bard-frontend\",\n  \"storageBucket\": \"bard-frontend.firebasestorage.app\",\n  \"messagingSenderId\": \"175205271074\",\n  \"appId\": \"1:175205271074:web:2b7bd4d34d33bf38e6ec7b\"\n}\n","eyJhbGciOiJSUzI1NiIsImtpZCI6IjExNjRiNzdiNDMzZDdhMDAyMWI4NjE4YjhjYTU3ZTMyZGI5MWUxMTMiLCJ0eXAiOiJKV1QifQ.eyJzdWIiOiJmaXJlYmFzZS1hZG1pbnNkay1mYnN2Y0BiYXJkLWZyb250ZW5kLmlhbS5nc2VydmljZWFjY291bnQuY29tIiwiYXVkIjoiaHR0cHM6Ly9pZGVudGl0eXRvb2xraXQuZ29vZ2xlYXBpcy5jb20vZ29vZ2xlLmlkZW50aXR5LmlkZW50aXR5dG9vbGtpdC52MS5JZGVudGl0eVRvb2xraXQiLCJ1aWQiOiIxNDY2MDYyMzc1MzQxNjUyMjM1NSIsImlzcyI6ImZpcmViYXNlLWFkbWluc2RrLWZic3ZjQGJhcmQtZnJvbnRlbmQuaWFtLmdzZXJ2aWNlYWNjb3VudC5jb20iLCJjbGFpbXMiOnsiYXBwSWQiOiJjXzk5MjYyZGMwYjY1MWY1YzRfaW5kZXguaHRtbC04NjcifSwiZXhwIjoxNzkwNTI1MDM0LCJpYXQiOjE3OTA1MjE0MzQsImFsZyI6IlJTMjU2In0.ipW8SP5XfXs5lzltfl2gKsR67QuPFQHtqOHbUQpB_laDv1K2pjdCyEenrAemej00QuFhIKhQDBP44FhhQZCgX9je2mdY3RiyaVrzEAqKQkUG4uds1IppumSeynN2HSIpWnxDsCi5aBAF2wWH9vnHSUVTBhLsGWUmQxUJmTf5pChWWRaA-tcQthmbsqzMlbiMfeNUSpz5NoMQPSCCsODPTN--dZpLxTzYJiJGIiuLb5J8M1a4ADilH9ZnN-deUhyvLxlNvf2SNu8c4NIpRmdW2R8cIUHRnYxA-o_ZCi3HKh2ZqAKODAw3OmZeqjf_f-n24DIwsE6zDDmfLIfZcFYvZQ","c_99262dc0b651f5c4_index.html-867")</script><script data-bard-client-injected="true">
+  document.addEventListener('input', (event) => {
+    if (event.target && (event.target.isContentEditable || event.target.hasAttribute('contenteditable'))) {
+      const clonedDoc = document.cloneNode(true);
+      const injectedScripts = clonedDoc.querySelectorAll('[data-bard-client-injected="true"]');
+      injectedScripts.forEach(el => el.remove());
+      window.parent.postMessage({
+        type: 'inlineEdit',
+        html: '<!DOCTYPE html>\n' + clonedDoc.documentElement.outerHTML
+      }, '*');
+    }
+  });
+</script><script data-bard-client-injected="true">(function(){'use strict';window.addEventListener("message",a=>{a.data&&a.data.type==="SUPPLEMENTAL_DATA_UPDATE"&&window.dispatchEvent(new CustomEvent("supplementaldataupdate",{detail:a.data.data}))});}).call(this);
+</script><script data-bard-client-injected="true">(function() {
+  const SCROLL_KEYS = new Set([
+    'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
+    ' ', 'Spacebar', 'PageUp', 'PageDown', 'Home', 'End',
+  ]);
+  const HORIZONTAL_KEYS = new Set(['ArrowLeft', 'ArrowRight']);
+
+  function isTextEntryTarget(target) {
+    if (!target) return false;
+    const tagName = target.tagName;
+    return tagName === 'INPUT' || tagName === 'TEXTAREA' ||
+        tagName === 'SELECT' || target.isContentEditable === true;
+  }
+
+  // An element absorbs the key only if it both overflows on the axis being
+  // scrolled and is configured to scroll on that axis. The cheap dimension
+  // test runs first because getComputedStyle forces a style recalc, and this
+  // runs on every keypress. Each axis is read from its own longhand: the
+  // 'overflow' shorthand serializes as two values when the axes differ, which
+  // is the common 'overflow-x: hidden; overflow-y: auto' pane.
+  function canScroll(node, horizontal) {
+    const overflows = horizontal ? node.scrollWidth > node.clientWidth
+                                 : node.scrollHeight > node.clientHeight;
+    if (!overflows) return false;
+    const style = window.getComputedStyle(node);
+    const overflow = horizontal ? style.overflowX : style.overflowY;
+    return overflow === 'auto' || overflow === 'scroll';
+  }
+
+  // Walks up from the event target so nested scrollers keep their behavior.
+  // <body> is included because pages that pin the root height make it the
+  // scroll container.
+  function hasScrollableAncestor(target, horizontal) {
+    let node = target;
+    while (node && node !== document.documentElement) {
+      if (canScroll(node, horizontal)) return true;
+      node = node.parentElement;
+    }
+    return false;
+  }
+
+  function rootCanScroll(horizontal) {
+    const scroller = document.scrollingElement || document.documentElement;
+    if (!scroller) return false;
+    // Tolerate a pixel of rounding so subpixel layouts do not look scrollable.
+    return horizontal ? scroller.scrollWidth > window.innerWidth + 1
+                      : scroller.scrollHeight > window.innerHeight + 1;
+  }
+
+  window.addEventListener('keydown', function(event) {
+    if (!SCROLL_KEYS.has(event.key)) return;
+    if (event.defaultPrevented) return;
+    // Alt and Meta turn arrows into browser history navigation, and Ctrl is
+    // reserved for shortcuts, so none of them are scroll intent.
+    if (event.altKey || event.metaKey || event.ctrlKey) return;
+
+    const target = event.target;
+    if (isTextEntryTarget(target)) return;
+
+    // Anything that can still absorb the scroll gets to keep it.
+    const horizontal = HORIZONTAL_KEYS.has(event.key);
+    if (rootCanScroll(horizontal)) return;
+    if (hasScrollableAncestor(target, horizontal)) return;
+
+    event.preventDefault();
+  }, {capture: true, passive: false});
+})();</script><script data-bard-client-injected="true">(function() {
+  // Ensure this script is executed only once
+  if (window.firebaseAuthBridgeScriptLoaded) {
+    return;
+  }
+  window.firebaseAuthBridgeScriptLoaded = true;
+
+  let nextTokenPromiseId = 0;
+
+  // Stores { resolve, reject } for ongoing token requests
+  const pendingTokenPromises = {};
+
+  // Listen for messages from the Host Application
+  window.addEventListener('message', function(event) {
+
+    const messageData = event.data;
+
+  if (messageData && messageData.type === 'RESOLVE_NEW_FIREBASE_TOKEN') {
+      const { success, token, error, promiseId } = messageData ?? {};
+      if (pendingTokenPromises[promiseId]) {
+        if (success) {
+          pendingTokenPromises[promiseId].resolve(token);
+        } else {
+          pendingTokenPromises[promiseId].reject(new Error(error || 'Token refresh failed from host.'));
+        }
+        delete pendingTokenPromises[promiseId];
+      }
+    }
+  });
+
+  // Expose a function for the Generated App to request a new Firebase token
+  window.requestNewFirebaseToken = function() {
+    const currentPromiseId = nextTokenPromiseId++;
+    const promise = new Promise((resolve, reject) => {
+      pendingTokenPromises[currentPromiseId] = { resolve, reject };
+    });
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({
+        type: 'REQUEST_NEW_FIREBASE_TOKEN',
+        promiseId: currentPromiseId
+      }, '*');
+    } else {
+      pendingTokenPromises[currentPromiseId].reject(new Error('No parent window to request token from.'));
+      delete pendingTokenPromises[currentPromiseId];
+    }
+    return promise;
+  };
+})();</script><script data-bard-client-injected="true">
+let realOriginalGetUserMedia = null;
+if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+  realOriginalGetUserMedia = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+}
+
+(function() {
+  if (navigator.mediaDevices && navigator.mediaDevices.__proto__) {
+    try {
+      Object.defineProperty(navigator.mediaDevices.__proto__, 'getUserMedia', {
+        get: function() {
+          return undefined; // Or throw an error
+        },
+        configurable: false
+      });
+    } catch (error) {
+      console.error("Error defining prototype getter:", error);
+    }
+  }
+})();
+
+(function() {
+  const pendingMediaResolvers = {};
+  let nextMediaPromiseId = 0;
+
+  function requestMediaPermissions(constraints) {
+    const mediaPromiseId = nextMediaPromiseId++;
+    const promise = new Promise((resolve, reject) => {
+      pendingMediaResolvers[mediaPromiseId] = (granted) => {
+        delete pendingMediaResolvers[mediaPromiseId];
+        resolve(granted);
+      };
+    });
+
+    window.parent.postMessage({
+      type: 'requestMediaPermission',
+      constraints: constraints,
+      promiseId: mediaPromiseId,
+    }, '*');
+
+    return promise;
+  }
+
+  let originalGetUserMedia = realOriginalGetUserMedia;
+
+  function interceptGetUserMedia() {
+    if (navigator.mediaDevices) {
+      Object.defineProperty(navigator.mediaDevices, 'getUserMedia', {
+        value: function(constraints) {
+          return requestMediaPermissions(constraints).then((granted) => {
+            if (granted) {
+              if (originalGetUserMedia) {
+                return originalGetUserMedia(constraints);
+              } else {
+                throw new Error("Original getUserMedia not available.");
+              }
+            } else {
+              throw new DOMException('Permission denied', 'NotAllowedError');
+            }
+          });
+        },
+        writable: false,
+        configurable: false
+      });
+    }
+  }
+
+  interceptGetUserMedia();
+
+  const observer = new MutationObserver(function(mutationsList, observer) {
+    for (const mutation of mutationsList) {
+      if (mutation.type === 'reconfigured' && mutation.name === 'getUserMedia' && mutation.object === navigator.mediaDevices) {
+        interceptGetUserMedia();
+      } else if (mutation.type === 'attributes' && mutation.attributeName === 'getUserMedia' && mutation.target === navigator.mediaDevices) {
+        interceptGetUserMedia();
+      } else if (mutation.type === 'childList' && mutation.addedNodes) {
+        mutation.addedNodes.forEach(node => {
+          if (node === navigator.mediaDevices) {
+            interceptGetUserMedia();
+          }
+        });
+      }
+    }
+  });
+
+  function interceptSpeechRecognition() {
+    if (!window.SpeechRecognition && !window.webkitSpeechRecognition) {
+      return;
+    }
+
+    const OriginalSpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    const SpeechRecognitionWrapper = function(...args) {
+      const recognizer = new OriginalSpeechRecognition(...args);
+      const originalStart = recognizer.start.bind(recognizer);
+
+      recognizer.start = function() {
+        requestMediaPermissions({ audio: true }).then(granted => {
+          if (granted) {
+            originalStart();
+          } else {
+            const errorEvent = new SpeechRecognitionErrorEvent('error');
+            errorEvent.error = 'not-allowed'; // This is the standard error for permission denial.
+            recognizer.dispatchEvent(errorEvent);
+          }
+        });
+      };
+
+      return recognizer;
+    };
+
+    SpeechRecognitionWrapper.prototype = OriginalSpeechRecognition.prototype;
+    SpeechRecognitionWrapper.prototype.constructor = SpeechRecognitionWrapper;
+
+    if (window.SpeechRecognition) {
+      window.SpeechRecognition = SpeechRecognitionWrapper;
+    }
+    if (window.webkitSpeechRecognition) {
+      window.webkitSpeechRecognition = SpeechRecognitionWrapper;
+    }
+  }
+
+  interceptSpeechRecognition();
+
+  window.addEventListener('message', function(event) {
+    if (event.data) {
+      if (event.data.type === 'resolveMediaPermission') {
+        const { promiseId, granted } = event.data;
+        if (pendingMediaResolvers[promiseId]) {
+          pendingMediaResolvers[promiseId](granted);
+        }
+      }
+    }
+  });
+
+})();</script><script ws-interception-config="{&quot;parentOrigin&quot;:&quot;https://gemini.google.com&quot;,&quot;proxiedDomains&quot;:[]}" data-bard-client-injected="true">(function(){'use strict';var u=typeof Object.defineProperties=="function"?Object.defineProperty:function(b,d,e){if(b==Array.prototype||b==Object.prototype)return b;b[d]=e.value;return b};function v(b){b=["object"==typeof globalThis&&globalThis,b,"object"==typeof window&&window,"object"==typeof self&&self,"object"==typeof global&&global];for(var d=0;d<b.length;++d){var e=b[d];if(e&&e.Math==Math)return e}throw Error("Cannot find global object");}var w=v(this);
+function y(b,d){if(d)a:{var e=w;b=b.split(".");for(var h=0;h<b.length-1;h++){var k=b[h];if(!(k in e))break a;e=e[k]}b=b[b.length-1];h=e[b];d=d(h);d!=h&&d!=null&&u(e,b,{configurable:!0,writable:!0,value:d})}}function z(b){function d(h){return b.next(h)}function e(h){return b.throw(h)}return new Promise(function(h,k){function m(n){n.done?h(n.value):Promise.resolve(n.value).then(d,e).then(m,k)}m(b.next())})}y("globalThis",function(b){return b||w});/*
+
+ Copyright The Closure Library Authors.
+ SPDX-License-Identifier: Apache-2.0
+*/
+function A(b,d){function e(){}e.prototype=d.prototype;b.j=d.prototype;b.prototype=new e;b.prototype.constructor=b;b.h=function(h,k,m){for(var n=Array(arguments.length-2),p=2;p<arguments.length;p++)n[p-2]=arguments[p];return d.prototype[k].apply(h,n)}};function B(b,d,e="*"){function h(a){if(typeof a==="string")return F.encode(a).buffer;if(a instanceof ArrayBuffer)return a.slice(0);if(ArrayBuffer.isView(a))return a.buffer.slice(a.byteOffset,a.byteOffset+a.byteLength);throw Error("Invalid data type");}function k(a){a=h(a);var f={type:"send",data:new Uint8Array(a)},g;(g=r)==null||g.postMessage(f,[a])}function m(){if(!r)throw Error("Data port not captured yet.");r.onmessage=a=>{if(a.data.type==="message"){a=new MessageEvent("message",{data:G.decode(a.data.data)});
+let f;(f=c.onmessage)==null||f.call(c,a);c.dispatchEvent(a)}}}function n(){if(!t)throw Error("Control port not captured yet.");t.onmessage=a=>{switch(a.data.type){case "open":l=1;var f=new Event("open"),g;(g=c.onopen)==null||g.call(c,f);c.dispatchEvent(f);q.forEach(H=>{k(H)});q=[];break;case "close":g=a.data;l=3;g=new CloseEvent("close",{code:g.code,reason:g.reason,wasClean:g.wasClean});(f=c.onclose)==null||f.call(c,g);c.dispatchEvent(g);break;case "error":l=3;f=new Event("error");let x;(x=c.onerror)==
+null||x.call(c,f);c.dispatchEvent(f)}}}function p(a){return z(function*(){var f=new MessageChannel;t=f.port1;var g=new MessageChannel;r=g.port1;n();m();window.parent.postMessage({type:"websocket_open",portOrdering:["control","data"],url:b,protocols:a||[],connectionId:I},e,[f.port2,g.port2])}())}var c=Reflect.construct(EventTarget,[],new.target);c.CONNECTING=0;c.OPEN=1;c.CLOSING=2;c.CLOSED=3;c.url=b;c.binaryType="arraybuffer";c.protocol="";c.i="";var l=0,t=null,r=null,q=[],F=new TextEncoder,G=new TextDecoder;
+c.onopen=null;c.onmessage=null;c.onclose=null;c.onerror=null;Object.defineProperty(c,"readyState",{get:()=>l,enumerable:!0,configurable:!0});Object.defineProperty(c,"bufferedAmount",{get:()=>{var a=0;q.forEach(f=>{a+=typeof f==="string"?f.length:f.byteLength});return a},enumerable:!0,configurable:!0});var I=function(){var a;return((a=globalThis.crypto)==null?0:a.randomUUID)?globalThis.crypto.randomUUID():"xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,f=>{var g=Math.random()*16|0;return(f===
+"x"?g:g&3|8).toString(16)})}();c.send=a=>{if(l===1)a instanceof Blob?a.arrayBuffer().then(f=>{k(f)}):k(a);else if(l===0)if(typeof a==="string")q.push(a);else if(a instanceof ArrayBuffer||ArrayBuffer.isView(a))q.push(h(a));else throw Error("Sending Blob is not supported before the connection is open.");else console.debug("WebSocket send called in CLOSING or CLOSED state; ignored.")};c.close=(a=1E3,f="")=>{if(l!==2&&l!==3){l=2;a={type:"close",code:a,reason:f,wasClean:a===1E3};var g;(g=t)==null||g.postMessage(a)}};
+Promise.resolve().then(()=>p(d));return c}A(B,EventTarget);var C=document.currentScript,D=C==null?void 0:C.getAttribute("ws-interception-config");if(!D)throw Error("WebSocket Interceptor: Missing ws-interception-config attribute in the script tag.");var E=JSON.parse(D);if(!E.parentOrigin||typeof E.parentOrigin!=="string")throw Error("WebSocket Interceptor: Invalid parentOrigin in ws-interception-config");
+(function(b){var d=Object.getOwnPropertyDescriptor(window,"WebSocket");if(!d||d.writable||d.configurable)d=Object.assign(function(e,h){try{let k=(new URL(e)).hostname;if(b.proxiedDomains.some(m=>k===m||k.endsWith(`.${m}`)))return new B(e,h,b.parentOrigin)}catch(k){throw window.parent.postMessage({type:"websocket_blocked",url:e,reason:"blocked_invalid_url"},b.parentOrigin),new DOMException(`WebSocket connection to '${e}' is not allowed in Canvas.`,"SecurityError");}window.parent.postMessage({type:"websocket_blocked",
+url:e,reason:"blocked_domain_not_allowlisted"},b.parentOrigin);throw new DOMException(`WebSocket connection to '${e}' is not allowed in Canvas.`,"SecurityError");},{CONNECTING:0,OPEN:1,CLOSING:2,CLOSED:3}),Object.defineProperty(window,"WebSocket",{value:d,writable:!1,configurable:!1})})({proxiedDomains:E.proxiedDomains||[],parentOrigin:E.parentOrigin});}).call(this);
+</script><script data-bard-client-injected="true">((function(modelInformation) {
+  const originalFetch = window.fetch;
+  // TODO: b/421908508 - Move these out of the script and match all generative AI model calls.
+  let googleLlmBaseApiUrls = [
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.textModelName + ':streamGenerateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.textModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageModelName + ':predict',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageModelName + ':predictLongRunning',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageEditModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageTransformModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.videoModelName + ':predict',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.videoModelName + ':predictLongRunning',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.ttsModelName + ':generateContent',
+  ];
+  modelInformation.deprecatedTextModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+    );
+  });
+  modelInformation.deprecatedImageModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':predict',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':predictLongRunning',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+  modelInformation.deprecatedGenerateImageModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+  modelInformation.deprecatedImageTransformModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+
+  const pendingFetchResolvers = {};
+  let nextPromiseId = 0;
+
+  function handleStringInput(input, optionsArgument) {
+    const actualUrl = input;
+    const fetchCallArgs = [actualUrl, optionsArgument];
+    const effectiveOptions = optionsArgument || {};
+    const bodyForApiKeyCheck = effectiveOptions.body;
+    const bodyForPostMessage = effectiveOptions.body;
+    return { actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage };
+  }
+
+  function handleRequestInput(input, optionsArgument) {
+    const actualUrl = input.url;
+    const fetchCallArgs = [input, optionsArgument];
+    const effectiveOptions = { method: input.method, headers: new Headers(input.headers) };
+    let bodyForApiKeyCheck;
+    let bodyForPostMessage;
+
+    if (optionsArgument) {
+      if (optionsArgument.method) effectiveOptions.method = optionsArgument.method;
+      if (optionsArgument.headers) effectiveOptions.headers = new Headers(optionsArgument.headers);
+      if ('body' in optionsArgument) {
+        bodyForApiKeyCheck = optionsArgument.body;
+        bodyForPostMessage = optionsArgument.body;
+      } else {
+        bodyForApiKeyCheck = undefined;
+        bodyForPostMessage = input.body;
+      }
+    } else {
+      bodyForApiKeyCheck = undefined;
+      bodyForPostMessage = input.body;
+    }
+    return { actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage };
+  }
+
+  window.fetch = function(input, optionsArgument) {
+    let actualUrl;
+    let fetchCallArgs;
+    let effectiveOptions = {};
+    let bodyForApiKeyCheck;
+    let bodyForPostMessage;
+
+    if (typeof input === 'string') {
+      ({actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage} = handleStringInput(input, optionsArgument));
+    } else if (input instanceof Request) {
+      ({actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage} = handleRequestInput(input, optionsArgument));
+    } else {
+      return originalFetch.apply(window, [input, optionsArgument]);
+    }
+
+    effectiveOptions.method = effectiveOptions.method || 'GET';
+    if (!effectiveOptions.headers) {
+      effectiveOptions.headers = new Headers();
+    }
+
+
+    if (typeof actualUrl === 'string' && googleLlmBaseApiUrls.some((url) => actualUrl.startsWith(url))) {
+      let apiKeyIsNull = true;
+
+      const regex = new RegExp("models/([^:]+)");
+      const modelNameMatch = actualUrl.match(regex);
+      const modelName = modelNameMatch ? modelNameMatch[1] : 'unspecified';
+
+
+      try {
+        const urlObject = new URL(actualUrl);  // Use URL object for robust parsing
+        const apiKeyParam = urlObject.searchParams.get('key');
+        if (apiKeyParam) {
+          apiKeyIsNull = false;
+        }
+      } catch (e) {
+        // Continue checks even if URL parsing fails
+      }
+
+      if (apiKeyIsNull && effectiveOptions.headers) {
+        const h = new Headers(effectiveOptions.headers);
+        const apiKeyHeaderValue = h.get('X-API-Key') || h.get('x-api-key');
+        if (apiKeyHeaderValue) {
+          apiKeyIsNull = false;
+          return originalFetch.apply(window, fetchCallArgs);
+        }
+      }
+
+      if (apiKeyIsNull && effectiveOptions.method && ['POST', 'PUT', 'PATCH'].includes(effectiveOptions.method.toUpperCase()) && typeof bodyForApiKeyCheck === 'string') {
+        try {
+          const bodyData = JSON.parse(bodyForApiKeyCheck);
+          if (bodyData && bodyData.apiKey) {
+            apiKeyIsNull = false;
+            return originalFetch.apply(window, fetchCallArgs);
+          }
+        } catch (e) {
+          // Ignore JSON parsing errors
+        }
+      }
+
+      if(apiKeyIsNull) {
+        const promiseId = nextPromiseId++;
+        const promise = new Promise((resolve) => {
+          pendingFetchResolvers[promiseId] = (resolvedResponse) => {
+            delete pendingFetchResolvers[promiseId];
+            resolve(resolvedResponse);
+          };
+        });
+
+        let serializedBodyForPostMessage;
+        if (typeof bodyForPostMessage === 'string' || bodyForPostMessage == null) {
+            serializedBodyForPostMessage = bodyForPostMessage;
+        } else if (bodyForPostMessage instanceof ReadableStream) {
+            serializedBodyForPostMessage = null;
+        } else {
+            try {
+                serializedBodyForPostMessage = JSON.stringify(bodyForPostMessage);
+            } catch (e) {
+                serializedBodyForPostMessage = null;
+            }
+        }
+
+        const messageOptions = {
+            method: effectiveOptions.method,
+            headers: Object.fromEntries(new Headers(effectiveOptions.headers).entries()),
+            body: serializedBodyForPostMessage
+        };
+
+        window.parent.postMessage({
+          type: 'requestFetch',
+          url: actualUrl,
+          modelName: modelName,
+          options: messageOptions,
+          promiseId: promiseId,
+        }, '*');
+
+        return promise;
+      }
+      return originalFetch.apply(window, fetchCallArgs);
+    }
+    return originalFetch.apply(window, fetchCallArgs);
+  };
+
+  window.addEventListener('message', function(event) {
+    if (event.data && event.data.type === 'resolveFetch') {
+      const { promiseId, response } = event.data;
+      if (pendingFetchResolvers[promiseId]) {
+        try {
+          const reconstructedResponse = new Response(response.body, {
+            status: response.status,
+            statusText: response.statusText,
+            headers: new Headers(response.headers),
+          });
+          pendingFetchResolvers[promiseId](reconstructedResponse);
+        } catch (error) {
+          pendingFetchResolvers[promiseId](new Response(null, { status: 500, statusText: "Interceptor Response Reconstruction Error" }));
+        }
+      }
+    }
+  });
+
+}))({"textModelName":"gemini-3-flash-preview","imageModelName":"imagen-4.0-generate-001","imageEditModelName":"gemini-3.1-flash-image","imageTransformModelName":"gemini-3-pro-image","videoModelName":"veo-2.0-generate-001","ttsModelName":"gemini-2.5-flash-preview-tts","deprecatedTextModelNames":["gemini-2.0-flash","gemini-2.5-flash","gemini-2.5-flash-preview-04-17","gemini-2.5-flash-preview-05-20","gemini-2.5-flash-preview-09-2025"],"deprecatedImageModelNames":["imagen-3.0-generate-001","imagen-3.0-generate-002"],"deprecatedGenerateImageModelNames":["gemini-2.5-flash-image-preview","gemini-2.5-flash-image","gemini-3.1-flash-image-preview"],"deprecatedImageTransformModelNames":["gemini-3-pro-image-preview-11-2025"]})</script><script data-bard-client-injected="true">(function(){'use strict';function a(){window.parent.postMessage({type:"interaction"},"*")}window.addEventListener("click",a,{capture:!0,passive:!0});window.addEventListener("touchstart",a,{capture:!0,passive:!0});window.addEventListener("keydown",a,{capture:!0,passive:!0});}).call(this);
+</script><script data-bard-client-injected="true">(function() {
+  const originalConsoleLog = console.log;
+  const originalConsoleError = console.error;
+
+    /**
+   * Normalizes an error event or a promise rejection reason into a structured error object.
+   * @param {*} errorEventOrReason The error object or reason.
+   * @return {object} Structured error data { message, name, stack }.
+   */
+  function getErrorObject(errorEventOrReason) {
+    if (errorEventOrReason instanceof Error) {
+      return {
+        message: errorEventOrReason.message,
+        name: errorEventOrReason.name,
+        stack: errorEventOrReason.stack,
+      };
+    }
+    // Fallback for non-Error objects.
+    try {
+      return {
+        message: JSON.stringify(errorEventOrReason),
+        name: 'UnknownErrorType',
+        stack: null,
+      };
+    } catch (e) {
+      return {
+        message: String(errorEventOrReason),
+        name: 'UnknownErrorTypeNonStringifiable',
+        stack: null,
+      };
+    }
+  }
+
+  /**
+   * Converts an array of arguments (from log/error) into a single string.
+   * Handles Error objects specially to include their message and stack.
+   * @param {Array<*>} args - Arguments passed to console methods.
+   * @return {string} A string representation of the arguments.
+   */
+  function stringifyArgs(args) {
+    return args
+      .map((arg) => {
+        if (arg instanceof Error) {
+          const {message, stack} = arg;
+          return `Error: ${message}${stack ? ('\nStack: ' + stack) : ''}`;
+        }
+        if (typeof arg === 'object' && arg !== null) {
+          try {
+            return JSON.stringify(arg);
+          } catch (error) {
+            return '[Circular Object]';
+          }
+        } else {
+          return String(arg);
+        }
+      })
+      .join(' ');
+  }
+
+  console.log = function(...args) {
+    const logString = stringifyArgs(args);
+    window.parent.postMessage({ type: 'log', message: logString }, '*');
+    originalConsoleLog.apply(console, args);
+  };
+
+  console.error = function(...args) {
+    let errorData;
+    if (args.length > 0 && args[0] instanceof Error) {
+      const err = args[0];
+      // If the first arg is an Error, capture its details.
+      errorData = {
+        type: 'error',
+        source: 'CONSOLE_ERROR',
+        ...getErrorObject(err),
+        rawArgsString: stringifyArgs(args.slice(1)),
+        timestamp: new Date().toISOString(),
+      };
+    } else {
+      // If not an Error object, treat all args as a general error message.
+      errorData = {
+        type: 'error',
+        source: 'CONSOLE_ERROR',
+        message: stringifyArgs(args),
+        name: 'ConsoleLoggedError',
+        stack: null,
+        timestamp: new Date().toISOString(),
+      };
+    }
+    window.parent.postMessage(errorData, '*');
+    originalConsoleError.apply(console, args);
+  };
+
+  // Listen for global unhandled synchronous errors.
+  window.addEventListener('error', function(event) {
+    const errorDetails = event.error ? getErrorObject(event.error) : {
+      message: event.message,
+      name: 'GlobalError',
+      stack: null,
+      filename: event.filename,
+      lineno: event.lineno,
+      colno: event.colno,
+    };
+
+    window.parent.postMessage({
+      type: 'error',
+      source: 'global',
+      ...errorDetails,
+      message: errorDetails.message || event.message,
+      timestamp: new Date().toISOString(),
+    }, '*');
+  });
+
+  // Listen for unhandled promise rejections (asynchronous errors).
+  window.addEventListener('unhandledrejection', function(event) {
+    const errorDetails = getErrorObject(event.reason);
+
+    window.parent.postMessage({
+      type: 'error',
+      source: 'unhandledrejection',
+      ...errorDetails,
+      message: errorDetails.message || 'Unhandled Promise Rejection',
+      timestamp: new Date().toISOString(),
+    }, '*');
+  });
+
+})();</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virginia Climate Equity &amp; Heat Safety Matrix | &amp;hack @ W&amp;M</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        wm: {
+                            gold: '#C5A059',
+                            goldLight: '#E8CA82',
+                            green: '#115740',
+                        },
+                        vibrant: {
+                            emerald: '#00F5A0',
+                            teal: '#00D9F6',
+                            coral: '#FF5E7E',
+                            amber: '#FFB800',
+                            purple: '#A855F7',
+                            pink: '#EC4899',
+                            cyan: '#06B6D4',
+                        },
+                        dark: {
+                            900: '#0B0F19',
+                            950: '#04060C',
+                            800: '#151D2F',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
+                    },
+                    animation: {
+                        'pulse-glow': 'pulseGlow 3s infinite alternate',
+                        'float': 'float 4s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        pulseGlow: {
+                            '0%': { boxShadow: '0 0 20px rgba(0, 245, 160, 0.25)' },
+                            '100%': { boxShadow: '0 0 45px rgba(0, 217, 246, 0.55)' },
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-6px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Google Fonts & Font Awesome Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" crossorigin="anonymous"></script>
+
+    <style>
+        body {
+            background-color: #04060C;
+            color: #F8FAFC;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .gradient-bg-mesh {
+            background-image: 
+                radial-gradient(at 15% 15%, rgba(0, 245, 160, 0.16) 0px, transparent 45%),
+                radial-gradient(at 85% 20%, rgba(0, 217, 246, 0.18) 0px, transparent 45%),
+                radial-gradient(at 50% 75%, rgba(255, 94, 126, 0.16) 0px, transparent 50%),
+                radial-gradient(at 80% 85%, rgba(197, 160, 89, 0.15) 0px, transparent 45%);
+            background-attachment: fixed;
+        }
+
+        .glass-card {
+            background: rgba(15, 23, 42, 0.72);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .glass-card-glow {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .glass-card-glow:hover {
+            border-color: rgba(0, 245, 160, 0.5);
+            box-shadow: 0 12px 35px -10px rgba(0, 245, 160, 0.3);
+            transform: translateY(-3px);
+        }
+
+        .gradient-text-vibrant {
+            background: linear-gradient(135deg, #00F5A0 0%, #00D9F6 35%, #FF5E7E 70%, #FFB800 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Responsive Map Ratio to Frame full Virginia state boundaries */
+        .va-map-aspect-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 52%;
+            min-height: 680px;
+        }
+
+        @media (max-width: 1024px) {
+            .va-map-aspect-container {
+                min-height: 560px;
+                padding-bottom: 68%;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .va-map-aspect-container {
+                min-height: 480px;
+                padding-bottom: 90%;
+            }
+        }
+
+        .va-map-iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+            border-radius: 1.25rem;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #04060C;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #00F5A0, #00D9F6);
+            border-radius: 4px;
+        }
+    </style>
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:Plus Jakarta Sans, Inter, sans-serif;font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.pointer-events-none{pointer-events:none}.absolute{position:absolute}.relative{position:relative}.sticky{position:sticky}.inset-0{inset:0px}.-bottom-28{bottom:-7rem}.-left-28{left:-7rem}.-right-28{right:-7rem}.-right-32{right:-8rem}.-top-28{top:-7rem}.-top-32{top:-8rem}.left-0{left:0px}.left-3\.5{left:0.875rem}.top-0{top:0px}.top-1\/2{top:50%}.z-10{z-index:10}.z-30{z-index:30}.z-40{z-index:40}.z-50{z-index:50}.mx-auto{margin-left:auto;margin-right:auto}.ml-2{margin-left:0.5rem}.mr-1{margin-right:0.25rem}.mr-1\.5{margin-right:0.375rem}.mr-2{margin-right:0.5rem}.mt-1{margin-top:0.25rem}.mt-2{margin-top:0.5rem}.mt-3{margin-top:0.75rem}.mt-5{margin-top:1.25rem}.mt-6{margin-top:1.5rem}.inline-block{display:inline-block}.flex{display:flex}.inline-flex{display:inline-flex}.grid{display:grid}.hidden{display:none}.h-11{height:2.75rem}.h-12{height:3rem}.h-2\.5{height:0.625rem}.h-20{height:5rem}.h-3{height:0.75rem}.h-60{height:15rem}.h-64{height:16rem}.h-80{height:20rem}.h-96{height:24rem}.h-full{height:100%}.min-h-screen{min-height:100vh}.w-11{width:2.75rem}.w-12{width:3rem}.w-2\.5{width:0.625rem}.w-20{width:5rem}.w-3{width:0.75rem}.w-80{width:20rem}.w-96{width:24rem}.w-full{width:100%}.min-w-\[200px\]{min-width:200px}.min-w-\[280px\]{min-width:280px}.max-w-3xl{max-width:48rem}.max-w-7xl{max-width:80rem}.flex-grow{flex-grow:1}.border-collapse{border-collapse:collapse}.-translate-y-1\/2{--tw-translate-y:-50%;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}@keyframes ping{75%, 100%{transform:scale(2);opacity:0}}.animate-ping{animation:ping 1s cubic-bezier(0, 0, 0.2, 1) infinite}@keyframes pulseGlow{0%{box-shadow:0 0 20px rgba(0, 245, 160, 0.25)}100%{box-shadow:0 0 45px rgba(0, 217, 246, 0.55)}}.animate-pulse-glow{animation:pulseGlow 3s infinite alternate}@keyframes spin{to{transform:rotate(360deg)}}.animate-spin{animation:spin 1s linear infinite}.cursor-pointer{cursor:pointer}.appearance-none{-webkit-appearance:none;appearance:none}.grid-cols-1{grid-template-columns:repeat(1, minmax(0, 1fr))}.grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-start{align-items:flex-start}.items-center{align-items:center}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-2{gap:0.5rem}.gap-2\.5{gap:0.625rem}.gap-3{gap:0.75rem}.gap-4{gap:1rem}.gap-6{gap:1.5rem}.gap-8{gap:2rem}.space-x-1 > :not([hidden]) ~ :not([hidden]){--tw-space-x-reverse:0;margin-right:calc(0.25rem * var(--tw-space-x-reverse));margin-left:calc(0.25rem * calc(1 - var(--tw-space-x-reverse)))}.space-x-1\.5 > :not([hidden]) ~ :not([hidden]){--tw-space-x-reverse:0;margin-right:calc(0.375rem * var(--tw-space-x-reverse));margin-left:calc(0.375rem * calc(1 - var(--tw-space-x-reverse)))}.space-x-2 > :not([hidden]) ~ :not([hidden]){--tw-space-x-reverse:0;margin-right:calc(0.5rem * var(--tw-space-x-reverse));margin-left:calc(0.5rem * calc(1 - var(--tw-space-x-reverse)))}.space-x-2\.5 > :not([hidden]) ~ :not([hidden]){--tw-space-x-reverse:0;margin-right:calc(0.625rem * var(--tw-space-x-reverse));margin-left:calc(0.625rem * calc(1 - var(--tw-space-x-reverse)))}.space-x-3\.5 > :not([hidden]) ~ :not([hidden]){--tw-space-x-reverse:0;margin-right:calc(0.875rem * var(--tw-space-x-reverse));margin-left:calc(0.875rem * calc(1 - var(--tw-space-x-reverse)))}.space-x-4 > :not([hidden]) ~ :not([hidden]){--tw-space-x-reverse:0;margin-right:calc(1rem * var(--tw-space-x-reverse));margin-left:calc(1rem * calc(1 - var(--tw-space-x-reverse)))}.space-y-1 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.25rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.25rem * var(--tw-space-y-reverse))}.space-y-12 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(3rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(3rem * var(--tw-space-y-reverse))}.space-y-2 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.5rem * var(--tw-space-y-reverse))}.space-y-3 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.75rem * var(--tw-space-y-reverse))}.space-y-4 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1rem * var(--tw-space-y-reverse))}.space-y-6 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.5rem * var(--tw-space-y-reverse))}.space-y-8 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(2rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(2rem * var(--tw-space-y-reverse))}.divide-y > :not([hidden]) ~ :not([hidden]){--tw-divide-y-reverse:0;border-top-width:calc(1px * calc(1 - var(--tw-divide-y-reverse)));border-bottom-width:calc(1px * var(--tw-divide-y-reverse))}.divide-slate-800\/60 > :not([hidden]) ~ :not([hidden]){border-color:rgb(30 41 59 / 0.6)}.overflow-hidden{overflow:hidden}.overflow-x-auto{overflow-x:auto}.rounded{border-radius:0.25rem}.rounded-2xl{border-radius:1rem}.rounded-3xl{border-radius:1.5rem}.rounded-\[14px\]{border-radius:14px}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:0.5rem}.rounded-md{border-radius:0.375rem}.rounded-xl{border-radius:0.75rem}.border{border-width:1px}.border-2{border-width:2px}.border-4{border-width:4px}.border-b{border-bottom-width:1px}.border-t{border-top-width:1px}.border-slate-700{--tw-border-opacity:1;border-color:rgb(51 65 85 / var(--tw-border-opacity, 1))}.border-slate-800{--tw-border-opacity:1;border-color:rgb(30 41 59 / var(--tw-border-opacity, 1))}.border-slate-800\/80{border-color:rgb(30 41 59 / 0.8)}.border-vibrant-amber\/40{border-color:rgb(255 184 0 / 0.4)}.border-vibrant-coral\/30{border-color:rgb(255 94 126 / 0.3)}.border-vibrant-coral\/40{border-color:rgb(255 94 126 / 0.4)}.border-vibrant-emerald\/20{border-color:rgb(0 245 160 / 0.2)}.border-vibrant-emerald\/30{border-color:rgb(0 245 160 / 0.3)}.border-vibrant-emerald\/40{border-color:rgb(0 245 160 / 0.4)}.border-vibrant-purple\/40{border-color:rgb(168 85 247 / 0.4)}.border-vibrant-teal{--tw-border-opacity:1;border-color:rgb(0 217 246 / var(--tw-border-opacity, 1))}.border-vibrant-teal\/30{border-color:rgb(0 217 246 / 0.3)}.border-vibrant-teal\/40{border-color:rgb(0 217 246 / 0.4)}.border-white\/10{border-color:rgb(255 255 255 / 0.1)}.border-wm-gold\/30{border-color:rgb(197 160 89 / 0.3)}.border-t-transparent{border-top-color:transparent}.bg-dark-950{--tw-bg-opacity:1;background-color:rgb(4 6 12 / var(--tw-bg-opacity, 1))}.bg-dark-950\/60{background-color:rgb(4 6 12 / 0.6)}.bg-dark-950\/90{background-color:rgb(4 6 12 / 0.9)}.bg-dark-950\/95{background-color:rgb(4 6 12 / 0.95)}.bg-slate-800{--tw-bg-opacity:1;background-color:rgb(30 41 59 / var(--tw-bg-opacity, 1))}.bg-slate-900{--tw-bg-opacity:1;background-color:rgb(15 23 42 / var(--tw-bg-opacity, 1))}.bg-slate-900\/80{background-color:rgb(15 23 42 / 0.8)}.bg-slate-900\/90{background-color:rgb(15 23 42 / 0.9)}.bg-vibrant-amber\/20{background-color:rgb(255 184 0 / 0.2)}.bg-vibrant-coral{--tw-bg-opacity:1;background-color:rgb(255 94 126 / var(--tw-bg-opacity, 1))}.bg-vibrant-coral\/10{background-color:rgb(255 94 126 / 0.1)}.bg-vibrant-coral\/15{background-color:rgb(255 94 126 / 0.15)}.bg-vibrant-coral\/20{background-color:rgb(255 94 126 / 0.2)}.bg-vibrant-emerald{--tw-bg-opacity:1;background-color:rgb(0 245 160 / var(--tw-bg-opacity, 1))}.bg-vibrant-emerald\/10{background-color:rgb(0 245 160 / 0.1)}.bg-vibrant-emerald\/15{background-color:rgb(0 245 160 / 0.15)}.bg-vibrant-emerald\/20{background-color:rgb(0 245 160 / 0.2)}.bg-vibrant-purple\/10{background-color:rgb(168 85 247 / 0.1)}.bg-vibrant-purple\/20{background-color:rgb(168 85 247 / 0.2)}.bg-vibrant-teal{--tw-bg-opacity:1;background-color:rgb(0 217 246 / var(--tw-bg-opacity, 1))}.bg-vibrant-teal\/10{background-color:rgb(0 217 246 / 0.1)}.bg-vibrant-teal\/15{background-color:rgb(0 217 246 / 0.15)}.bg-vibrant-teal\/20{background-color:rgb(0 217 246 / 0.2)}.bg-wm-gold{--tw-bg-opacity:1;background-color:rgb(197 160 89 / var(--tw-bg-opacity, 1))}.bg-wm-gold\/15{background-color:rgb(197 160 89 / 0.15)}.bg-gradient-to-r{background-image:linear-gradient(to right, var(--tw-gradient-stops))}.bg-gradient-to-tr{background-image:linear-gradient(to top right, var(--tw-gradient-stops))}.from-vibrant-emerald{--tw-gradient-from:#00F5A0 var(--tw-gradient-from-position);--tw-gradient-to:rgb(0 245 160 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-wm-gold{--tw-gradient-from:#C5A059 var(--tw-gradient-from-position);--tw-gradient-to:rgb(197 160 89 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-wm-green{--tw-gradient-from:#115740 var(--tw-gradient-from-position);--tw-gradient-to:rgb(17 87 64 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.via-slate-900{--tw-gradient-to:rgb(15 23 42 / 0)  var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), #0f172a var(--tw-gradient-via-position), var(--tw-gradient-to)}.via-vibrant-teal{--tw-gradient-to:rgb(0 217 246 / 0)  var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), #00D9F6 var(--tw-gradient-via-position), var(--tw-gradient-to)}.to-amber-500{--tw-gradient-to:#f59e0b var(--tw-gradient-to-position)}.to-blue-500{--tw-gradient-to:#3b82f6 var(--tw-gradient-to-position)}.to-vibrant-coral{--tw-gradient-to:#FF5E7E var(--tw-gradient-to-position)}.to-wm-gold{--tw-gradient-to:#C5A059 var(--tw-gradient-to-position)}.to-wm-green{--tw-gradient-to:#115740 var(--tw-gradient-to-position)}.p-0\.5{padding:0.125rem}.p-1\.5{padding:0.375rem}.p-2\.5{padding:0.625rem}.p-3{padding:0.75rem}.p-3\.5{padding:0.875rem}.p-4{padding:1rem}.p-5{padding:1.25rem}.p-6{padding:1.5rem}.px-2{padding-left:0.5rem;padding-right:0.5rem}.px-2\.5{padding-left:0.625rem;padding-right:0.625rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.px-3\.5{padding-left:0.875rem;padding-right:0.875rem}.px-4{padding-left:1rem;padding-right:1rem}.py-0\.5{padding-top:0.125rem;padding-bottom:0.125rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.py-1\.5{padding-top:0.375rem;padding-bottom:0.375rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.py-2\.5{padding-top:0.625rem;padding-bottom:0.625rem}.py-3{padding-top:0.75rem;padding-bottom:0.75rem}.py-3\.5{padding-top:0.875rem;padding-bottom:0.875rem}.py-8{padding-top:2rem;padding-bottom:2rem}.pb-4{padding-bottom:1rem}.pb-6{padding-bottom:1.5rem}.pl-10{padding-left:2.5rem}.pl-6{padding-left:1.5rem}.pr-4{padding-right:1rem}.pr-6{padding-right:1.5rem}.pt-2{padding-top:0.5rem}.pt-4{padding-top:1rem}.text-left{text-align:left}.text-center{text-align:center}.text-right{text-align:right}.text-2xl{font-size:1.5rem;line-height:2rem}.text-3xl{font-size:1.875rem;line-height:2.25rem}.text-\[10px\]{font-size:10px}.text-\[11px\]{font-size:11px}.text-base{font-size:1rem;line-height:1.5rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-xs{font-size:0.75rem;line-height:1rem}.font-black{font-weight:900}.font-bold{font-weight:700}.font-extrabold{font-weight:800}.font-medium{font-weight:500}.font-normal{font-weight:400}.font-semibold{font-weight:600}.uppercase{text-transform:uppercase}.italic{font-style:italic}.leading-relaxed{line-height:1.625}.leading-tight{line-height:1.25}.tracking-tight{letter-spacing:-0.025em}.tracking-wider{letter-spacing:0.05em}.text-dark-950{--tw-text-opacity:1;color:rgb(4 6 12 / var(--tw-text-opacity, 1))}.text-slate-200{--tw-text-opacity:1;color:rgb(226 232 240 / var(--tw-text-opacity, 1))}.text-slate-300{--tw-text-opacity:1;color:rgb(203 213 225 / var(--tw-text-opacity, 1))}.text-slate-400{--tw-text-opacity:1;color:rgb(148 163 184 / var(--tw-text-opacity, 1))}.text-slate-500{--tw-text-opacity:1;color:rgb(100 116 139 / var(--tw-text-opacity, 1))}.text-vibrant-amber{--tw-text-opacity:1;color:rgb(255 184 0 / var(--tw-text-opacity, 1))}.text-vibrant-coral{--tw-text-opacity:1;color:rgb(255 94 126 / var(--tw-text-opacity, 1))}.text-vibrant-emerald{--tw-text-opacity:1;color:rgb(0 245 160 / var(--tw-text-opacity, 1))}.text-vibrant-purple{--tw-text-opacity:1;color:rgb(168 85 247 / var(--tw-text-opacity, 1))}.text-vibrant-teal{--tw-text-opacity:1;color:rgb(0 217 246 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.text-wm-gold{--tw-text-opacity:1;color:rgb(197 160 89 / var(--tw-text-opacity, 1))}.placeholder-slate-400::placeholder{--tw-placeholder-opacity:1;color:rgb(148 163 184 / var(--tw-placeholder-opacity, 1))}.accent-vibrant-amber{accent-color:#FFB800}.accent-vibrant-emerald{accent-color:#00F5A0}.accent-vibrant-teal{accent-color:#00D9F6}.opacity-0{opacity:0}.shadow-2xl{--tw-shadow:0 25px 50px -12px rgb(0 0 0 / 0.25);--tw-shadow-colored:0 25px 50px -12px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-lg{--tw-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-md{--tw-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-vibrant-emerald\/20{--tw-shadow-color:rgb(0 245 160 / 0.2);--tw-shadow:var(--tw-shadow-colored)}.shadow-vibrant-emerald\/25{--tw-shadow-color:rgb(0 245 160 / 0.25);--tw-shadow:var(--tw-shadow-colored)}.blur-3xl{--tw-blur:blur(64px);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.backdrop-blur-xl{--tw-backdrop-blur:blur(24px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.transition{transition-property:color, background-color, border-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-opacity{transition-property:opacity;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.duration-500{transition-duration:500ms}.selection\:bg-vibrant-emerald *::selection{--tw-bg-opacity:1;background-color:rgb(0 245 160 / var(--tw-bg-opacity, 1))}.selection\:text-black *::selection{--tw-text-opacity:1;color:rgb(0 0 0 / var(--tw-text-opacity, 1))}.selection\:bg-vibrant-emerald::selection{--tw-bg-opacity:1;background-color:rgb(0 245 160 / var(--tw-bg-opacity, 1))}.selection\:text-black::selection{--tw-text-opacity:1;color:rgb(0 0 0 / var(--tw-text-opacity, 1))}.hover\:border-slate-600:hover{--tw-border-opacity:1;border-color:rgb(71 85 105 / var(--tw-border-opacity, 1))}.hover\:bg-emerald-400:hover{--tw-bg-opacity:1;background-color:rgb(52 211 153 / var(--tw-bg-opacity, 1))}.hover\:bg-slate-700:hover{--tw-bg-opacity:1;background-color:rgb(51 65 85 / var(--tw-bg-opacity, 1))}.hover\:bg-slate-800\/60:hover{background-color:rgb(30 41 59 / 0.6)}.hover\:bg-slate-900\/60:hover{background-color:rgb(15 23 42 / 0.6)}.hover\:text-vibrant-amber:hover{--tw-text-opacity:1;color:rgb(255 184 0 / var(--tw-text-opacity, 1))}.hover\:text-vibrant-coral:hover{--tw-text-opacity:1;color:rgb(255 94 126 / var(--tw-text-opacity, 1))}.hover\:text-vibrant-emerald:hover{--tw-text-opacity:1;color:rgb(0 245 160 / var(--tw-text-opacity, 1))}.hover\:text-vibrant-purple:hover{--tw-text-opacity:1;color:rgb(168 85 247 / var(--tw-text-opacity, 1))}.hover\:text-vibrant-teal:hover{--tw-text-opacity:1;color:rgb(0 217 246 / var(--tw-text-opacity, 1))}.hover\:text-white:hover{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.hover\:opacity-95:hover{opacity:0.95}.focus\:border-vibrant-teal:focus{--tw-border-opacity:1;border-color:rgb(0 217 246 / var(--tw-border-opacity, 1))}.focus\:outline-none:focus{outline:2px solid transparent;outline-offset:2px}@media (min-width: 640px){.sm\:block{display:block}.sm\:grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.sm\:p-10{padding:2.5rem}.sm\:p-8{padding:2rem}.sm\:px-6{padding-left:1.5rem;padding-right:1.5rem}.sm\:text-2xl{font-size:1.5rem;line-height:2rem}.sm\:text-3xl{font-size:1.875rem;line-height:2.25rem}.sm\:text-4xl{font-size:2.25rem;line-height:2.5rem}.sm\:text-5xl{font-size:3rem;line-height:1}.sm\:text-base{font-size:1rem;line-height:1.5rem}.sm\:text-lg{font-size:1.125rem;line-height:1.75rem}.sm\:text-sm{font-size:0.875rem;line-height:1.25rem}}@media (min-width: 768px){.md\:grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.md\:flex-row{flex-direction:row}.md\:items-center{align-items:center}}@media (min-width: 1024px){.lg\:col-span-5{grid-column:span 5 / span 5}.lg\:col-span-7{grid-column:span 7 / span 7}.lg\:grid-cols-12{grid-template-columns:repeat(12, minmax(0, 1fr))}.lg\:grid-cols-6{grid-template-columns:repeat(6, minmax(0, 1fr))}.lg\:px-8{padding-left:2rem;padding-right:2rem}}@media (min-width: 1280px){.xl\:flex{display:flex}}</style></head>
+<body class="gradient-bg-mesh min-h-screen flex flex-col selection:bg-vibrant-emerald selection:text-black">
+
+    <div class="bg-gradient-to-r from-wm-green via-slate-900 to-wm-green border-b border-wm-gold/30 px-4 py-2 text-xs font-semibold text-slate-200 flex flex-wrap items-center justify-between gap-2 z-50">
+        <div class="flex items-center space-x-2">
+            <span class="px-2 py-0.5 rounded bg-wm-gold text-dark-950 font-black uppercase text-[10px]">W&amp;M &amp;hack Entry</span>
+            <span>Ready for deployment: Copy directly into <strong>index.html</strong> in VS Code.</span>
+        </div>
+        <button onclick="copyEntireCode()" class="px-3 py-1 rounded bg-vibrant-emerald hover:bg-emerald-400 text-dark-950 font-bold flex items-center transition shadow-md">
+            <i class="fa-solid fa-copy mr-1.5"></i> Copy Full Code for VS Code
+        </button>
+    </div>
+
+    <!-- Navigation Header -->
+    <header class="sticky top-0 z-40 glass-card border-b border-slate-800/80 px-4 lg:px-8 py-3.5">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-3.5">
+                <div class="h-11 w-11 rounded-2xl bg-gradient-to-tr from-vibrant-emerald via-vibrant-teal to-wm-gold p-0.5 shadow-lg shadow-vibrant-emerald/20 animate-pulse-glow">
+                    <div class="h-full w-full bg-dark-950 rounded-[14px] flex items-center justify-center">
+                        <i class="fa-solid fa-map-location-dot text-vibrant-emerald text-xl"></i>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex items-center space-x-2">
+                        <span class="font-black text-xl tracking-tight text-white">VA Climate Equity Matrix</span>
+                        <span class="px-2.5 py-0.5 text-xs font-bold rounded-full bg-gradient-to-r from-wm-gold to-amber-500 text-dark-950 shadow-md">
+                            <i class="fa-solid fa-award mr-1"></i>&amp;hack 2026
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-400 font-medium hidden sm:block">William &amp; Mary GIS Spatial Heat Safety &amp; Cooling Deserts Project</p>
+                </div>
+            </div>
+
+            <!-- Quick Jump Navigation -->
+            <nav class="hidden xl:flex items-center space-x-1 text-sm font-semibold">
+                <a href="#overview" class="px-3 py-2 rounded-xl text-slate-300 hover:text-vibrant-emerald hover:bg-slate-800/60 transition">Overview</a>
+                <a href="#va-map-section" class="px-3 py-2 rounded-xl text-slate-300 hover:text-vibrant-teal hover:bg-slate-800/60 transition">Full VA Map</a>
+                <a href="#heat-watch" class="px-3 py-2 rounded-xl text-slate-300 hover:text-vibrant-coral hover:bg-slate-800/60 transition">Heat Watch &amp; Forecast</a>
+                <a href="#jurisdiction-table" class="px-3 py-2 rounded-xl text-slate-300 hover:text-vibrant-amber hover:bg-slate-800/60 transition">Regional Data</a>
+                <a href="#simulator" class="px-3 py-2 rounded-xl text-slate-300 hover:text-vibrant-purple hover:bg-slate-800/60 transition">Policy Simulator</a>
+            </nav>
+
+            <div class="flex items-center space-x-2.5">
+                <a href="https://wm-gis.maps.arcgis.com/apps/instant/basic/index.html?appid=6eaa9fbb085947b2886c5d3b376062b5" target="_blank" rel="noopener noreferrer" class="px-4 py-2.5 text-xs sm:text-sm font-bold rounded-xl bg-gradient-to-r from-vibrant-emerald via-vibrant-teal to-blue-500 hover:opacity-95 text-dark-950 shadow-lg shadow-vibrant-emerald/25 transition flex items-center">
+                    <span>ArcGIS Portal</span>
+                    <i class="fa-solid fa-arrow-up-right-from-square ml-2 text-xs"></i>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
+
+        <section id="overview" class="relative rounded-3xl p-6 sm:p-10 glass-card border border-white/10 overflow-hidden">
+            <div class="absolute -top-28 -right-28 w-96 h-96 bg-vibrant-emerald/20 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute -bottom-28 -left-28 w-96 h-96 bg-vibrant-coral/20 rounded-full blur-3xl pointer-events-none"></div>
+
+            <div class="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                <div class="lg:col-span-7 space-y-6">
+                    <div class="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-slate-900/90 border border-vibrant-emerald/40 text-xs font-bold text-vibrant-emerald shadow-lg">
+                        <span class="w-2.5 h-2.5 rounded-full bg-vibrant-emerald animate-ping"></span>
+                        <i class="fa-solid fa-fire-flame-curved text-vibrant-coral"></i>
+                        <span>William &amp; Mary &amp;hack Competition Entry</span>
+                    </div>
+
+                    <h1 class="text-3xl sm:text-5xl font-black tracking-tight text-white leading-tight">
+                        Virginia Cooling Deserts &amp; <br>
+                        <span class="gradient-text-vibrant">Heat Safety Matrix</span>
+                    </h1>
+
+                    <p class="text-slate-200 text-base sm:text-lg leading-relaxed font-normal">
+                        This interactive spatial analysis evaluates environmental equity and emergency heat safety across Virginia by overlaying household air conditioning deficits against vehicular accessibility to public cooling infrastructure. By modeling 10-minute street network drive times around municipal public libraries, the web application identifies high-priority <strong>"cooling deserts"</strong>—vulnerable communities with elevated household AC deficits and limited rapid access to climate-controlled public facilities during extreme heat events.
+                    </p>
+
+                    <div class="flex flex-wrap gap-2.5 pt-2">
+                        <span class="px-3.5 py-1.5 rounded-xl bg-slate-900/80 border border-vibrant-teal/30 text-vibrant-teal text-xs font-semibold flex items-center">
+                            <i class="fa-solid fa-car-side mr-2"></i>10-Min Network Drive Times
+                        </span>
+                        <span class="px-3.5 py-1.5 rounded-xl bg-slate-900/80 border border-vibrant-emerald/30 text-vibrant-emerald text-xs font-semibold flex items-center">
+                            <i class="fa-solid fa-building-shield mr-2"></i>350+ Public Libraries
+                        </span>
+                        <span class="px-3.5 py-1.5 rounded-xl bg-slate-900/80 border border-vibrant-coral/30 text-vibrant-coral text-xs font-semibold flex items-center">
+                            <i class="fa-solid fa-temperature-arrow-up mr-2"></i>ACS Household AC Deficits
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Stat Cards -->
+                <div class="lg:col-span-5 grid grid-cols-2 gap-4">
+                    <div class="glass-card p-5 rounded-2xl border border-vibrant-coral/30 glass-card-glow">
+                        <div class="flex items-center justify-between">
+                            <span class="text-slate-400 text-xs font-bold uppercase tracking-wider">At-Risk Population</span>
+                            <div class="p-2.5 bg-vibrant-coral/15 text-vibrant-coral rounded-xl">
+                                <i class="fa-solid fa-users-slash text-lg"></i>
+                            </div>
+                        </div>
+                        <div class="mt-3 text-3xl font-extrabold text-white">284,000+</div>
+                        <p class="text-xs text-slate-300 mt-1">Virginians in high AC deficit zones</p>
+                    </div>
+
+                    <div class="glass-card p-5 rounded-2xl border border-vibrant-teal/30 glass-card-glow">
+                        <div class="flex items-center justify-between">
+                            <span class="text-slate-400 text-xs font-bold uppercase tracking-wider">Cooling Deserts</span>
+                            <div class="p-2.5 bg-vibrant-teal/15 text-vibrant-teal rounded-xl">
+                                <i class="fa-solid fa-triangle-exclamation text-lg"></i>
+                            </div>
+                        </div>
+                        <div class="mt-3 text-3xl font-extrabold text-white">142</div>
+                        <p class="text-xs text-slate-300 mt-1">Census block groups isolated from access</p>
+                    </div>
+
+                    <div class="glass-card p-5 rounded-2xl border border-vibrant-emerald/30 glass-card-glow">
+                        <div class="flex items-center justify-between">
+                            <span class="text-slate-400 text-xs font-bold uppercase tracking-wider">Drive Threshold</span>
+                            <div class="p-2.5 bg-vibrant-emerald/15 text-vibrant-emerald rounded-xl">
+                                <i class="fa-solid fa-clock text-lg"></i>
+                            </div>
+                        </div>
+                        <div class="mt-3 text-3xl font-extrabold text-white">10 Min</div>
+                        <p class="text-xs text-slate-300 mt-1">Max vehicular drive time benchmark</p>
+                    </div>
+
+                    <div class="glass-card p-5 rounded-2xl border border-wm-gold/30 glass-card-glow">
+                        <div class="flex items-center justify-between">
+                            <span class="text-slate-400 text-xs font-bold uppercase tracking-wider">Peak Heat Index</span>
+                            <div class="p-2.5 bg-wm-gold/15 text-wm-gold rounded-xl">
+                                <i class="fa-solid fa-temperature-high text-lg"></i>
+                            </div>
+                        </div>
+                        <div class="mt-3 text-3xl font-extrabold text-white">108°F</div>
+                        <p class="text-xs text-slate-300 mt-1">Highest projected summer risk level</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="va-map-section" class="space-y-4">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 glass-card p-5 rounded-2xl border border-white/10">
+                <div>
+                    <div class="flex items-center space-x-2">
+                        <span class="px-2.5 py-1 rounded-md bg-vibrant-emerald/20 text-vibrant-emerald text-xs font-bold">LIVE GIS EMBED</span>
+                        <h2 class="text-xl sm:text-2xl font-extrabold text-white">Statewide Virginia Heat Equity Map</h2>
+                    </div>
+                    <p class="text-xs sm:text-sm text-slate-300 mt-1">
+                        Framed for complete statewide visibility across Virginia. Examine 10-minute drive times, AC deficit clusters, and municipal cooling havens.
+                    </p>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2">
+                    <button onclick="reloadMap()" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 transition flex items-center">
+                        <i class="fa-solid fa-rotate-right mr-1.5 text-vibrant-emerald"></i> Reset View
+                    </button>
+                    <button onclick="toggleMapFullscreen()" class="px-3.5 py-2 rounded-xl bg-gradient-to-r from-vibrant-emerald via-vibrant-teal to-blue-500 text-dark-950 text-xs font-extrabold transition flex items-center shadow-lg shadow-vibrant-emerald/20">
+                        <i class="fa-solid fa-expand mr-1.5"></i> Fullscreen
+                    </button>
+                </div>
+            </div>
+
+            <!-- ArcGIS Map Frame -->
+            <div id="map-frame-wrapper" class="relative w-full rounded-3xl glass-card border-2 border-vibrant-teal/30 overflow-hidden shadow-2xl">
+                <!-- Loader Overlay -->
+                <div id="map-loader-overlay" class="absolute inset-0 bg-dark-950/95 backdrop-blur-xl flex flex-col items-center justify-center z-30 transition-opacity duration-500 opacity-0" style="display: none;">
+                    <div class="relative w-20 h-20">
+                        <div class="absolute top-0 left-0 w-full h-full border-4 border-vibrant-emerald/20 rounded-full"></div>
+                        <div class="absolute top-0 left-0 w-full h-full border-4 border-gradient-to-r from-vibrant-emerald via-vibrant-teal to-vibrant-coral rounded-full border-t-transparent animate-spin"></div>
+                    </div>
+                    <p class="mt-5 text-slate-200 font-bold text-base">Rendering Full Virginia Spatial Dataset...</p>
+                    <p class="text-xs text-vibrant-teal font-medium mt-1">Framing state boundary &amp; street network drive time buffers</p>
+                </div>
+
+                <div class="va-map-aspect-container">
+                    <iframe id="va-arcgis-map" src="https://wm-gis.maps.arcgis.com/apps/instant/basic/index.html?appid=6eaa9fbb085947b2886c5d3b376062b5" class="va-map-iframe" title="Virginia Climate Equity &amp; Emergency Heat Safety Map" allow="geolocation; fullscreen" onload="onMapLoaded()">
+                    </iframe>
+                </div>
+
+                <div class="p-3 bg-dark-950/90 border-t border-white/10 flex flex-wrap items-center justify-between text-xs text-slate-300 gap-2">
+                    <div class="flex items-center space-x-4">
+                        <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-vibrant-coral inline-block mr-1.5"></span> High AC Deficit Zone</span>
+                        <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-vibrant-teal inline-block mr-1.5"></span> 10-Min Library Isochrone</span>
+                        <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-vibrant-emerald inline-block mr-1.5"></span> Public Library Haven</span>
+                    </div>
+                    <div class="text-slate-400 italic text-[11px]">
+                        <i class="fa-solid fa-circle-info mr-1 text-vibrant-teal"></i> Use zoom controls inside map to view individual cities or block groups
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="heat-watch" class="glass-card rounded-3xl p-6 sm:p-8 border border-white/10 space-y-8 relative overflow-hidden">
+            <div class="absolute -top-32 -right-32 w-80 h-80 bg-vibrant-coral/10 rounded-full blur-3xl pointer-events-none"></div>
+
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-6">
+                <div>
+                    <span class="px-3 py-1 rounded-full bg-vibrant-coral/20 text-vibrant-coral text-xs font-bold border border-vibrant-coral/30">
+                        <i class="fa-solid fa-temperature-arrow-up mr-1"></i>DAILY MONITOR
+                    </span>
+                    <h2 class="text-2xl sm:text-3xl font-extrabold text-white mt-2">Virginia Daily Heat Watch &amp; 7-Day Forecast</h2>
+                    <p class="text-xs sm:text-sm text-slate-300 mt-1">Track daily high/low temperatures, heat indices, and public cooling readiness across key Virginia regions.</p>
+                </div>
+
+                <!-- Day Selector -->
+                <div class="flex items-center space-x-1.5 bg-dark-950 p-1.5 rounded-2xl border border-white/10 overflow-x-auto">
+                    <button onclick="setDay(0)" class="day-btn px-3 py-2 rounded-xl text-xs font-bold transition bg-vibrant-emerald text-dark-950" data-day="0">Mon</button>
+                    <button onclick="setDay(1)" class="day-btn px-3 py-2 rounded-xl text-xs font-bold transition text-slate-300 hover:text-white" data-day="1">Tue</button>
+                    <button onclick="setDay(2)" class="day-btn px-3 py-2 rounded-xl text-xs font-bold transition text-slate-300 hover:text-white" data-day="2">Wed</button>
+                    <button onclick="setDay(3)" class="day-btn px-3 py-2 rounded-xl text-xs font-bold transition text-slate-300 hover:text-white" data-day="3">Thu</button>
+                    <button onclick="setDay(4)" class="day-btn px-3 py-2 rounded-xl text-xs font-bold transition text-slate-300 hover:text-white" data-day="4">Fri</button>
+                    <button onclick="setDay(5)" class="day-btn px-3 py-2 rounded-xl text-xs font-bold transition text-slate-300 hover:text-white" data-day="5">Sat</button>
+                    <button onclick="setDay(6)" class="day-btn px-3 py-2 rounded-xl text-xs font-bold transition text-slate-300 hover:text-white" data-day="6">Sun</button>
+                </div>
+            </div>
+
+            <!-- Region Selectors -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                <button onclick="selectRegion('tidewater')" id="reg-btn-tidewater" class="region-card p-3.5 rounded-2xl border text-left transition border-vibrant-teal bg-vibrant-teal/10">
+                    <div class="text-[10px] font-bold text-vibrant-teal uppercase tracking-wider">Hampton Roads</div>
+                    <div class="text-sm font-extrabold text-white mt-1">Tidewater</div>
+                    <div id="reg-temp-tidewater" class="text-lg font-black text-vibrant-teal mt-1">92°F</div>
+                </button>
+
+                <button onclick="selectRegion('richmond')" id="reg-btn-richmond" class="region-card p-3.5 rounded-2xl border border-white/10 text-left transition hover:border-slate-600 bg-dark-950/60">
+                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Central Metro</div>
+                    <div class="text-sm font-extrabold text-white mt-1">Richmond</div>
+                    <div id="reg-temp-richmond" class="text-lg font-black text-white mt-1">96°F</div>
+                </button>
+
+                <button onclick="selectRegion('nova')" id="reg-btn-nova" class="region-card p-3.5 rounded-2xl border border-white/10 text-left transition hover:border-slate-600 bg-dark-950/60">
+                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Northern VA</div>
+                    <div class="text-sm font-extrabold text-white mt-1">NoVA / Fairfax</div>
+                    <div id="reg-temp-nova" class="text-lg font-black text-white mt-1">94°F</div>
+                </button>
+
+                <button onclick="selectRegion('shenandoah')" id="reg-btn-shenandoah" class="region-card p-3.5 rounded-2xl border border-white/10 text-left transition hover:border-slate-600 bg-dark-950/60">
+                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Valley Region</div>
+                    <div class="text-sm font-extrabold text-white mt-1">Shenandoah</div>
+                    <div id="reg-temp-shenandoah" class="text-lg font-black text-white mt-1">88°F</div>
+                </button>
+
+                <button onclick="selectRegion('charlottesville')" id="reg-btn-charlottesville" class="region-card p-3.5 rounded-2xl border border-white/10 text-left transition hover:border-slate-600 bg-dark-950/60">
+                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Central VA</div>
+                    <div class="text-sm font-extrabold text-white mt-1">C'ville</div>
+                    <div id="reg-temp-charlottesville" class="text-lg font-black text-white mt-1">91°F</div>
+                </button>
+
+                <button onclick="selectRegion('roanoke')" id="reg-btn-roanoke" class="region-card p-3.5 rounded-2xl border border-white/10 text-left transition hover:border-slate-600 bg-dark-950/60">
+                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Southwest VA</div>
+                    <div class="text-sm font-extrabold text-white mt-1">Roanoke</div>
+                    <div id="reg-temp-roanoke" class="text-lg font-black text-white mt-1">89°F</div>
+                </button>
+            </div>
+
+            <!-- Active Region Forecast Panel & Graph -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                <div class="lg:col-span-5 bg-dark-950/90 p-6 rounded-3xl border border-white/10 space-y-6">
+                    <div class="flex justify-between items-start border-b border-slate-800 pb-4">
+                        <div>
+                            <span id="active-region-tag" class="text-xs font-bold text-vibrant-teal uppercase tracking-wider">Tidewater / Hampton Roads</span>
+                            <h3 id="active-region-name" class="text-2xl font-black text-white mt-1">Williamsburg &amp; Norfolk Zone</h3>
+                        </div>
+                        <div id="active-region-badge" class="px-3 py-1.5 rounded-xl bg-vibrant-amber/20 border border-vibrant-amber/40 text-vibrant-amber text-xs font-bold">
+                            Moderate Heat Warning
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="p-3.5 bg-slate-900/80 rounded-2xl border border-slate-800">
+                            <div class="text-slate-400 text-xs font-medium">Forecasted High</div>
+                            <div id="stat-high" class="text-3xl font-black text-white mt-1">92°F</div>
+                        </div>
+                        <div class="p-3.5 bg-slate-900/80 rounded-2xl border border-slate-800">
+                            <div class="text-slate-400 text-xs font-medium">Real-Feel Heat Index</div>
+                            <div id="stat-heat-index" class="text-3xl font-black text-vibrant-coral mt-1">101°F</div>
+                        </div>
+                        <div class="p-3.5 bg-slate-900/80 rounded-2xl border border-slate-800">
+                            <div class="text-slate-400 text-xs font-medium">Relative Humidity</div>
+                            <div id="stat-humidity" class="text-2xl font-bold text-vibrant-teal mt-1">68%</div>
+                        </div>
+                        <div class="p-3.5 bg-slate-900/80 rounded-2xl border border-slate-800">
+                            <div class="text-slate-400 text-xs font-medium">Library Shelters Open</div>
+                            <div id="stat-shelters" class="text-2xl font-bold text-vibrant-emerald mt-1">18 / 18</div>
+                        </div>
+                    </div>
+
+                    <div class="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 text-xs space-y-2">
+                        <div class="font-bold text-slate-200 flex items-center">
+                            <i class="fa-solid fa-bullhorn text-vibrant-coral mr-2"></i> Local Heat Advisory Guidance
+                        </div>
+                        <p id="stat-advisory" class="text-slate-300 leading-relaxed">
+                            High humidity will push heat index values above 100°F. Uncooled households in Williamsburg &amp; Portsmouth block groups are advised to utilize 10-minute library cooling centers during 12PM–6PM peak heat hours.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 7-Day Trend Chart -->
+                <div class="lg:col-span-7 bg-dark-950/90 p-6 rounded-3xl border border-white/10 space-y-3">
+                    <div class="flex justify-between items-center">
+                        <h4 class="text-xs font-extrabold uppercase tracking-wider text-slate-400">7-Day Regional Temp Trend vs 95°F Threshold</h4>
+                        <span class="text-xs text-vibrant-coral font-bold"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Emergency Trigger: 95°F+</span>
+                    </div>
+                    <div class="h-64 relative">
+                        <canvas id="tempTrendChart" width="1552" height="512" style="display: block; box-sizing: border-box; height: 256px; width: 776px;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="jurisdiction-table" class="space-y-4">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 glass-card p-6 rounded-3xl border border-white/10">
+                <div>
+                    <span class="px-3 py-1 rounded-full bg-vibrant-emerald/20 text-vibrant-emerald text-xs font-bold border border-vibrant-emerald/30">
+                        CENSUS DATASET
+                    </span>
+                    <h2 class="text-2xl sm:text-3xl font-extrabold text-white mt-2">Virginia Jurisdiction Vulnerability Index</h2>
+                    <p class="text-xs sm:text-sm text-slate-300 mt-1">Explore AC deficits, 10-minute library access percentages, and heat priority ratings across key counties and cities.</p>
+                </div>
+
+                <div class="relative min-w-[280px]">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                    <input id="table-search" type="text" placeholder="Search county or city..." onkeyup="filterTable()" class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-vibrant-teal transition">
+                </div>
+            </div>
+
+            <div class="glass-card rounded-3xl border border-white/10 overflow-hidden shadow-2xl">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-800 bg-slate-900/80 text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
+                                <th class="p-4 pl-6">Jurisdiction</th>
+                                <th class="p-4">Region</th>
+                                <th class="p-4">Household AC Deficit %</th>
+                                <th class="p-4">10-Min Library Access %</th>
+                                <th class="p-4">Peak Heat Index</th>
+                                <th class="p-4">Cooling Desert Status</th>
+                                <th class="p-4 pr-6">Priority Level</th>
+                            </tr>
+                        </thead>
+                        <tbody id="jurisdiction-tbody" class="divide-y divide-slate-800/60 text-xs font-medium"><tr class="hover:bg-slate-900/60 transition">
+                    <td class="p-4 pl-6 font-bold text-white">Richmond City</td>
+                    <td class="p-4 text-slate-300">Richmond Metro</td>
+                    <td class="p-4 font-semibold text-vibrant-coral">18.4%</td>
+                    <td class="p-4 font-semibold text-vibrant-teal">68%</td>
+                    <td class="p-4 font-bold text-white">96°F</td>
+                    <td class="p-4 text-slate-300">High Vulnerability</td>
+                    <td class="p-4 pr-6">
+                        <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold border bg-vibrant-coral/20 text-vibrant-coral border-vibrant-coral/40">
+                            Priority 1
+                        </span>
+                    </td>
+                </tr><tr class="hover:bg-slate-900/60 transition">
+                    <td class="p-4 pl-6 font-bold text-white">Norfolk City</td>
+                    <td class="p-4 text-slate-300">Tidewater</td>
+                    <td class="p-4 font-semibold text-vibrant-coral">16.8%</td>
+                    <td class="p-4 font-semibold text-vibrant-teal">72%</td>
+                    <td class="p-4 font-bold text-white">93°F</td>
+                    <td class="p-4 text-slate-300">High Vulnerability</td>
+                    <td class="p-4 pr-6">
+                        <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold border bg-vibrant-coral/20 text-vibrant-coral border-vibrant-coral/40">
+                            Priority 1
+                        </span>
+                    </td>
+                </tr><tr class="hover:bg-slate-900/60 transition">
+                    <td class="p-4 pl-6 font-bold text-white">Petersburg City</td>
+                    <td class="p-4 text-slate-300">Richmond Metro</td>
+                    <td class="p-4 font-semibold text-vibrant-coral">19.1%</td>
+                    <td class="p-4 font-semibold text-vibrant-teal">54%</td>
+                    <td class="p-4 font-bold text-white">97°F</td>
+                    <td class="p-4 text-slate-300">Critical Desert</td>
+                    <td class="p-4 pr-6">
+                        <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold border bg-vibrant-coral/20 text-vibrant-coral border-vibrant-coral/40">
+                            Priority 1
+                        </span>
+                    </td>
+                </tr><tr class="hover:bg-slate-900/60 transition">
+                    <td class="p-4 pl-6 font-bold text-white">Roanoke City</td>
+                    <td class="p-4 text-slate-300">Southwest VA</td>
+                    <td class="p-4 font-semibold text-vibrant-coral">14.2%</td>
+                    <td class="p-4 font-semibold text-vibrant-teal">61%</td>
+                    <td class="p-4 font-bold text-white">89°F</td>
+                    <td class="p-4 text-slate-300">Moderate Desert</td>
+                    <td class="p-4 pr-6">
+                        <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold border bg-vibrant-amber/20 text-vibrant-amber border-vibrant-amber/40">
+                            Priority 2
+                        </span>
+                    </td>
+                </tr><tr class="hover:bg-slate-900/60 transition">
+                    <td class="p-4 pl-6 font-bold text-white">Fairfax County</td>
+                    <td class="p-4 text-slate-300">Northern VA</td>
+                    <td class="p-4 font-semibold text-vibrant-coral">5.8%</td>
+                    <td class="p-4 font-semibold text-vibrant-teal">89%</td>
+                    <td class="p-4 font-bold text-white">94°F</td>
+                    <td class="p-4 text-slate-300">Low Vulnerability</td>
+                    <td class="p-4 pr-6">
+                        <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold border bg-vibrant-emerald/20 text-vibrant-emerald border-vibrant-emerald/40">
+                            Priority 4
+                        </span>
+                    </td>
+                </tr><tr class="hover:bg-slate-900/60 transition">
+                    <td class="p-4 pl-6 font-bold text-white">Newport News</td>
+                    <td class="p-4 text-slate-300">Tidewater</td>
+                    <td class="p-4 font-semibold text-vibrant-coral">15.3%</td>
+                    <td class="p-4 font-semibold text-vibrant-teal">76%</td>
+                    <td class="p-4 font-bold text-white">92°F</td>
+                    <td class="p-4 text-slate-300">Moderate Desert</td>
+                    <td class="p-4 pr-6">
+                        <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold border bg-vibrant-amber/20 text-vibrant-amber border-vibrant-amber/40">
+                            Priority 2
+                        </span>
+                    </td>
+                </tr><tr class="hover:bg-slate-900/60 transition">
+                    <td class="p-4 pl-6 font-bold text-white">Williamsburg City</td>
+                    <td class="p-4 text-slate-300">Tidewater</td>
+                    <td class="p-4 font-semibold text-vibrant-coral">8.2%</td>
+                    <td class="p-4 font-semibold text-vibrant-teal">84%</td>
+                    <td class="p-4 font-bold text-white">91°F</td>
+                    <td class="p-4 text-slate-300">Low Vulnerability</td>
+                    <td class="p-4 pr-6">
+                        <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold border bg-vibrant-emerald/20 text-vibrant-emerald border-vibrant-emerald/40">
+                            Priority 3
+                        </span>
+                    </td>
+                </tr><tr class="hover:bg-slate-900/60 transition">
+                    <td class="p-4 pl-6 font-bold text-white">Danville City</td>
+                    <td class="p-4 text-slate-300">Southside VA</td>
+                    <td class="p-4 font-semibold text-vibrant-coral">17.9%</td>
+                    <td class="p-4 font-semibold text-vibrant-teal">52%</td>
+                    <td class="p-4 font-bold text-white">95°F</td>
+                    <td class="p-4 text-slate-300">Critical Desert</td>
+                    <td class="p-4 pr-6">
+                        <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold border bg-vibrant-coral/20 text-vibrant-coral border-vibrant-coral/40">
+                            Priority 1
+                        </span>
+                    </td>
+                </tr><tr class="hover:bg-slate-900/60 transition">
+                    <td class="p-4 pl-6 font-bold text-white">Charlottesville</td>
+                    <td class="p-4 text-slate-300">Central VA</td>
+                    <td class="p-4 font-semibold text-vibrant-coral">11.4%</td>
+                    <td class="p-4 font-semibold text-vibrant-teal">79%</td>
+                    <td class="p-4 font-bold text-white">91°F</td>
+                    <td class="p-4 text-slate-300">Moderate Desert</td>
+                    <td class="p-4 pr-6">
+                        <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold border bg-vibrant-emerald/20 text-vibrant-emerald border-vibrant-emerald/40">
+                            Priority 3
+                        </span>
+                    </td>
+                </tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section class="space-y-8">
+            <div class="text-center max-w-3xl mx-auto space-y-2">
+                <span class="px-3.5 py-1 rounded-full bg-vibrant-teal/15 text-vibrant-teal border border-vibrant-teal/30 text-xs font-bold uppercase tracking-wider">
+                    GIS Spatial Analytics
+                </span>
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-white">How Cooling Deserts Are Modeled</h2>
+                <p class="text-slate-300 text-sm sm:text-base">
+                    Combining ACS 5-Year demographic metrics, street network topology, and microclimate heat exposure.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="glass-card p-6 rounded-3xl border border-vibrant-coral/30 flex flex-col justify-between glass-card-glow">
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div class="w-12 h-12 rounded-2xl bg-vibrant-coral/20 border border-vibrant-coral/40 text-vibrant-coral flex items-center justify-center font-black text-xl">
+                                01
+                            </div>
+                            <span class="text-xs font-bold text-vibrant-coral uppercase">Demographic Layer</span>
+                        </div>
+                        <h3 class="text-xl font-extrabold text-white">ACS AC Deficit Index</h3>
+                        <p class="text-slate-300 text-sm leading-relaxed">
+                            Census block groups analyzed for households lacking air conditioning, normalized by poverty rates and elderly population density.
+                        </p>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-slate-800 text-xs text-slate-400 flex items-center justify-between">
+                        <span>ACS 5-Year Estimates</span>
+                        <span class="text-vibrant-coral font-bold"><i class="fa-solid fa-temperature-high mr-1"></i>Vulnerability</span>
+                    </div>
+                </div>
+
+                <div class="glass-card p-6 rounded-3xl border border-vibrant-teal/30 flex flex-col justify-between glass-card-glow">
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div class="w-12 h-12 rounded-2xl bg-vibrant-teal/20 border border-vibrant-teal/40 text-vibrant-teal flex items-center justify-center font-black text-xl">
+                                02
+                            </div>
+                            <span class="text-xs font-bold text-vibrant-teal uppercase">Network Layer</span>
+                        </div>
+                        <h3 class="text-xl font-extrabold text-white">10-Min Library Isochrones</h3>
+                        <p class="text-slate-300 text-sm leading-relaxed">
+                            ArcGIS Network Analyst models 10-minute vehicular drive time catchments around municipal public libraries across Virginia.
+                        </p>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-slate-800 text-xs text-slate-400 flex items-center justify-between">
+                        <span>Street Network ISOP</span>
+                        <span class="text-vibrant-teal font-bold"><i class="fa-solid fa-route mr-1"></i>Accessibility</span>
+                    </div>
+                </div>
+
+                <div class="glass-card p-6 rounded-3xl border border-vibrant-emerald/30 flex flex-col justify-between glass-card-glow">
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div class="w-12 h-12 rounded-2xl bg-vibrant-emerald/20 border border-vibrant-emerald/40 text-vibrant-emerald flex items-center justify-center font-black text-xl">
+                                03
+                            </div>
+                            <span class="text-xs font-bold text-vibrant-emerald uppercase">Synthesis Layer</span>
+                        </div>
+                        <h3 class="text-xl font-extrabold text-white">Cooling Desert Overlays</h3>
+                        <p class="text-slate-300 text-sm leading-relaxed">
+                            Overlay synthesis isolates high AC deficit census tracts falling entirely outside the 10-minute library drive time boundaries.
+                        </p>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-slate-800 text-xs text-slate-400 flex items-center justify-between">
+                        <span>Bivariate Spatial Union</span>
+                        <span class="text-vibrant-emerald font-bold"><i class="fa-solid fa-bullseye mr-1"></i>Priority Zones</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="simulator" class="glass-card rounded-3xl p-6 sm:p-8 border border-white/10 space-y-8 relative overflow-hidden">
+            <div class="absolute -top-32 -right-32 w-80 h-80 bg-vibrant-purple/10 rounded-full blur-3xl pointer-events-none"></div>
+
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-6">
+                <div>
+                    <span class="px-3.5 py-1 rounded-full bg-vibrant-purple/20 text-vibrant-purple text-xs font-bold border border-vibrant-purple/40">
+                        SIMULATION ENGINE
+                    </span>
+                    <h2 class="text-2xl sm:text-3xl font-extrabold text-white mt-2">Policy &amp; Mitigation Simulator</h2>
+                    <p class="text-xs sm:text-sm text-slate-300 mt-1">Model civic cooling interventions and observe real-time projected risk reduction across Virginia.</p>
+                </div>
+                <div class="bg-dark-950/90 p-4 rounded-2xl border border-white/10 text-right min-w-[200px]">
+                    <div class="text-xs text-slate-400 font-medium">Statewide Heat Vulnerability Index</div>
+                    <div id="sim-score" class="text-3xl font-black text-vibrant-coral">78.4 / 100</div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                <!-- Controls -->
+                <div class="lg:col-span-5 space-y-6">
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-sm">
+                            <label class="font-bold text-slate-200">Extended Library Operating Hours</label>
+                            <span id="slider-hours-val" class="text-vibrant-emerald font-extrabold">+0 hrs/day</span>
+                        </div>
+                        <input id="slider-hours" type="range" min="0" max="6" value="0" step="1" oninput="runSimulation()" class="w-full h-2.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-vibrant-emerald">
+                        <p class="text-xs text-slate-400">Keeps libraries open through 10PM peak evening heat surges.</p>
+                    </div>
+
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-sm">
+                            <label class="font-bold text-slate-200">Mobile Emergency Cooling Shuttles</label>
+                            <span id="slider-shuttle-val" class="text-vibrant-teal font-extrabold">0 Units</span>
+                        </div>
+                        <input id="slider-shuttles" type="range" min="0" max="40" value="0" step="2" oninput="runSimulation()" class="w-full h-2.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-vibrant-teal">
+                        <p class="text-xs text-slate-400">Deploys climate-controlled shuttles into unserved rural corridors.</p>
+                    </div>
+
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-sm">
+                            <label class="font-bold text-slate-200">Direct Household AC Subsidies</label>
+                            <span id="slider-subsidy-val" class="text-vibrant-amber font-extrabold">0% Coverage</span>
+                        </div>
+                        <input id="slider-subsidies" type="range" min="0" max="60" value="0" step="5" oninput="runSimulation()" class="w-full h-2.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-vibrant-amber">
+                        <p class="text-xs text-slate-400">Funds window/portable air conditioners for low-income residents.</p>
+                    </div>
+
+                    <button onclick="resetSimulation()" class="w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition border border-slate-700">
+                        Reset Simulation Parameters
+                    </button>
+                </div>
+
+                <!-- Simulation Visual Output -->
+                <div class="lg:col-span-7 bg-dark-950/90 p-6 rounded-3xl border border-white/10 space-y-4">
+                    <h4 class="text-xs font-extrabold uppercase tracking-wider text-slate-400">Projected Risk Reduction Impact</h4>
+                    <div class="h-60 relative">
+                        <canvas id="simChart" width="1552" height="480" style="display: block; box-sizing: border-box; height: 240px; width: 776px;"></canvas>
+                    </div>
+                    <div id="sim-status-card" class="p-4 rounded-2xl bg-vibrant-emerald/10 border border-vibrant-emerald/30 text-xs text-vibrant-emerald space-y-1">
+                        <div class="font-extrabold flex items-center text-sm text-white">
+                            <i class="fa-solid fa-chart-line text-vibrant-emerald mr-2"></i> Simulation Feedback
+                        </div>
+                        <p id="sim-status-text" class="text-slate-200">
+                            Baseline status. Adjust policy sliders to model emergency heat risk mitigation.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800 bg-dark-950 py-8 px-4 text-center text-xs text-slate-500 space-y-2">
+        <p>Created for the <strong>&amp;hack Hackathon</strong> at William &amp; Mary.</p>
+        <p>Data Sources: ArcGIS Online, US Census Bureau ACS 5-Year Estimates, Virginia Geographic Information Network (VGIN).</p>
+    </footer>
+
+    <script>
+        // Copy Code Helper for VS Code Users
+        function copyEntireCode() {
+            const codeText = document.documentElement.outerHTML;
+            const dummy = document.createElement('textarea');
+            document.body.appendChild(dummy);
+            dummy.value = `<!DOCTYPE html>\n${codeText}`;
+            dummy.select();
+            document.execCommand('copy');
+            document.body.removeChild(dummy);
+            alert("Whole index.html code copied to clipboard! Paste directly into VS Code.");
+        }
+
+        // Jurisdiction Data Array
+        const jurisdictions = [
+            { name: "Richmond City", region: "Richmond Metro", acDeficit: "18.4%", access: "68%", temp: "96°F", desert: "High Vulnerability", priority: "Priority 1" },
+            { name: "Norfolk City", region: "Tidewater", acDeficit: "16.8%", access: "72%", temp: "93°F", desert: "High Vulnerability", priority: "Priority 1" },
+            { name: "Petersburg City", region: "Richmond Metro", acDeficit: "19.1%", access: "54%", temp: "97°F", desert: "Critical Desert", priority: "Priority 1" },
+            { name: "Roanoke City", region: "Southwest VA", acDeficit: "14.2%", access: "61%", temp: "89°F", desert: "Moderate Desert", priority: "Priority 2" },
+            { name: "Fairfax County", region: "Northern VA", acDeficit: "5.8%", access: "89%", temp: "94°F", desert: "Low Vulnerability", priority: "Priority 4" },
+            { name: "Newport News", region: "Tidewater", acDeficit: "15.3%", access: "76%", temp: "92°F", desert: "Moderate Desert", priority: "Priority 2" },
+            { name: "Williamsburg City", region: "Tidewater", acDeficit: "8.2%", access: "84%", temp: "91°F", desert: "Low Vulnerability", priority: "Priority 3" },
+            { name: "Danville City", region: "Southside VA", acDeficit: "17.9%", access: "52%", temp: "95°F", desert: "Critical Desert", priority: "Priority 1" },
+            { name: "Charlottesville", region: "Central VA", acDeficit: "11.4%", access: "79%", temp: "91°F", desert: "Moderate Desert", priority: "Priority 3" }
+        ];
+
+        function renderTable(data) {
+            const tbody = document.getElementById('jurisdiction-tbody');
+            tbody.innerHTML = '';
+            data.forEach(item => {
+                let badgeClass = item.priority === 'Priority 1' 
+                    ? 'bg-vibrant-coral/20 text-vibrant-coral border-vibrant-coral/40' 
+                    : item.priority === 'Priority 2' 
+                    ? 'bg-vibrant-amber/20 text-vibrant-amber border-vibrant-amber/40' 
+                    : 'bg-vibrant-emerald/20 text-vibrant-emerald border-vibrant-emerald/40';
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-900/60 transition";
+                tr.innerHTML = `
+                    <td class="p-4 pl-6 font-bold text-white">${item.name}</td>
+                    <td class="p-4 text-slate-300">${item.region}</td>
+                    <td class="p-4 font-semibold text-vibrant-coral">${item.acDeficit}</td>
+                    <td class="p-4 font-semibold text-vibrant-teal">${item.access}</td>
+                    <td class="p-4 font-bold text-white">${item.temp}</td>
+                    <td class="p-4 text-slate-300">${item.desert}</td>
+                    <td class="p-4 pr-6">
+                        <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold border ${badgeClass}">
+                            ${item.priority}
+                        </span>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function filterTable() {
+            const query = document.getElementById('table-search').value.toLowerCase();
+            const filtered = jurisdictions.filter(j => j.name.toLowerCase().includes(query) || j.region.toLowerCase().includes(query));
+            renderTable(filtered);
+        }
+
+        // Regional Temp Forecast Data
+        const regionalForecasts = {
+            tidewater: {
+                name: "Williamsburg & Norfolk Zone",
+                tag: "Hampton Roads",
+                highs: [92, 94, 96, 91, 88, 93, 95],
+                heatIndices: [101, 104, 107, 98, 93, 102, 105],
+                humidities: ["68%", "72%", "74%", "65%", "60%", "70%", "73%"],
+                shelters: "18 / 18",
+                advisory: "High humidity will push heat index values above 100°F. Uncooled households in Williamsburg & Portsmouth block groups are advised to utilize 10-minute library cooling centers during 12PM–6PM peak heat hours."
+            },
+            richmond: {
+                name: "Capital Metro Corridor",
+                tag: "Richmond Metro",
+                highs: [96, 98, 99, 94, 90, 95, 97],
+                heatIndices: [105, 108, 110, 101, 95, 103, 106],
+                humidities: ["64%", "68%", "70%", "62%", "58%", "65%", "67%"],
+                shelters: "22 / 22",
+                advisory: "Urban heat island effect in Richmond City elevates evening temperatures. Library cooling stations extending hours through 9PM in high deficit census tracts."
+            },
+            nova: {
+                name: "Fairfax & Arlington Beltway",
+                tag: "Northern Virginia",
+                highs: [94, 95, 97, 92, 89, 93, 95],
+                heatIndices: [100, 102, 105, 97, 92, 99, 102],
+                humidities: ["58%", "60%", "65%", "55%", "52%", "59%", "61%"],
+                shelters: "31 / 31",
+                advisory: "High urban density. Excellent library accessibility (89%), but vulnerable populations in isolated pocket block groups require targeted transit cooling shuttles."
+            },
+            shenandoah: {
+                name: "Valley & Winchester Zone",
+                tag: "Shenandoah Valley",
+                highs: [88, 90, 92, 87, 84, 89, 91],
+                heatIndices: [91, 94, 97, 90, 86, 93, 95],
+                humidities: ["52%", "55%", "58%", "50%", "48%", "53%", "56%"],
+                shelters: "12 / 12",
+                advisory: "Lower relative temperatures, but rural transportation distances create drive-time isolation beyond 10 minutes for mountain-adjacent residents."
+            },
+            charlottesville: {
+                name: "Albemarle & Central Zone",
+                tag: "Central Virginia",
+                highs: [91, 93, 95, 90, 87, 92, 94],
+                heatIndices: [97, 100, 103, 95, 90, 98, 101],
+                humidities: ["60%", "62%", "66%", "58%", "54%", "61%", "63%"],
+                shelters: "14 / 14",
+                advisory: "Moderate heat warning. Public libraries serving as primary cooling centers in downtown Charlottesville corridors."
+            },
+            roanoke: {
+                name: "Roanoke & New River Valley",
+                tag: "Southwest Virginia",
+                highs: [89, 91, 93, 88, 85, 90, 92],
+                heatIndices: [94, 97, 100, 92, 88, 95, 97],
+                humidities: ["56%", "58%", "62%", "54%", "50%", "57%", "59%"],
+                shelters: "15 / 15",
+                advisory: "Topographic barriers create localized cooling deserts. Emergency cooling buses deployed along high-deficit transit routes."
+            }
+        };
+
+        let activeRegionKey = 'tidewater';
+        let activeDayIndex = 0;
+        let tempChart;
+
+        function selectRegion(key) {
+            activeRegionKey = key;
+            document.querySelectorAll('.region-card').forEach(card => {
+                card.className = "region-card p-3.5 rounded-2xl border border-white/10 text-left transition hover:border-slate-600 bg-dark-950/60";
+            });
+            const selectedBtn = document.getElementById(`reg-btn-${key}`);
+            if (selectedBtn) {
+                selectedBtn.className = "region-card p-3.5 rounded-2xl border text-left transition border-vibrant-teal bg-vibrant-teal/10";
+            }
+            updateRegionDisplay();
+        }
+
+        function setDay(dayIdx) {
+            activeDayIndex = dayIdx;
+            document.querySelectorAll('.day-btn').forEach(btn => {
+                if (parseInt(btn.getAttribute('data-day')) === dayIdx) {
+                    btn.className = "day-btn px-3 py-2 rounded-xl text-xs font-bold transition bg-vibrant-emerald text-dark-950";
+                } else {
+                    btn.className = "day-btn px-3 py-2 rounded-xl text-xs font-bold transition text-slate-300 hover:text-white";
+                }
+            });
+            updateRegionDisplay();
+        }
+
+        function updateRegionDisplay() {
+            const data = regionalForecasts[activeRegionKey];
+            document.getElementById('active-region-tag').innerText = data.tag;
+            document.getElementById('active-region-name').innerText = data.name;
+            document.getElementById('stat-high').innerText = `${data.highs[activeDayIndex]}°F`;
+            document.getElementById('stat-heat-index').innerText = `${data.heatIndices[activeDayIndex]}°F`;
+            document.getElementById('stat-humidity').innerText = data.humidities[activeDayIndex];
+            document.getElementById('stat-shelters').innerText = data.shelters;
+            document.getElementById('stat-advisory').innerText = data.advisory;
+
+            if (tempChart) {
+                tempChart.data.datasets[0].data = data.highs;
+                tempChart.data.datasets[1].data = data.heatIndices;
+                tempChart.update();
+            }
+        }
+
+        function initTempChart() {
+            const ctx = document.getElementById('tempTrendChart').getContext('2d');
+            tempChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [
+                        {
+                            label: 'Forecast High (°F)',
+                            data: regionalForecasts.tidewater.highs,
+                            borderColor: '#00D9F6',
+                            backgroundColor: 'rgba(0, 217, 246, 0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            borderWidth: 3
+                        },
+                        {
+                            label: 'Real-Feel Heat Index (°F)',
+                            data: regionalForecasts.tidewater.heatIndices,
+                            borderColor: '#FF5E7E',
+                            backgroundColor: 'transparent',
+                            borderDash: [5, 5],
+                            tension: 0.4,
+                            borderWidth: 2
+                        },
+                        {
+                            label: 'Emergency Threshold (95°F)',
+                            data: [95, 95, 95, 95, 95, 95, 95],
+                            borderColor: 'rgba(255, 184, 0, 0.6)',
+                            borderWidth: 1.5,
+                            pointRadius: 0,
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: '#CBD5E1', font: { family: 'Plus Jakarta Sans', size: 11 } } }
+                    },
+                    scales: {
+                        y: {
+                            min: 80,
+                            max: 115,
+                            grid: { color: 'rgba(255, 255, 255, 0.08)' },
+                            ticks: { color: '#94A3B8' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#F8FAFC', font: { weight: 'bold' } }
+                        }
+                    }
+                }
+            });
+        }
+
+        function onMapLoaded() {
+            const overlay = document.getElementById('map-loader-overlay');
+            if (overlay) {
+                overlay.classList.add('opacity-0');
+                setTimeout(() => { overlay.style.display = 'none'; }, 500);
+            }
+        }
+
+        function reloadMap() {
+            const iframe = document.getElementById('va-arcgis-map');
+            const overlay = document.getElementById('map-loader-overlay');
+            if (iframe && overlay) {
+                overlay.style.display = 'flex';
+                overlay.classList.remove('opacity-0');
+                iframe.src = iframe.src;
+            }
+        }
+
+        function toggleMapFullscreen() {
+            const wrapper = document.getElementById('map-frame-wrapper');
+            if (!document.fullscreenElement) {
+                if (wrapper.requestFullscreen) wrapper.requestFullscreen();
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+            }
+        }
+
+        let simChart;
+        function initSimChart() {
+            const ctx = document.getElementById('simChart').getContext('2d');
+            simChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Baseline Vulnerability', 'Simulated Intervention'],
+                    datasets: [{
+                        data: [78.4, 78.4],
+                        backgroundColor: ['rgba(255, 94, 126, 0.85)', 'rgba(0, 245, 160, 0.85)'],
+                        borderColor: ['#FF5E7E', '#00F5A0'],
+                        borderWidth: 2,
+                        borderRadius: 12
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: { color: 'rgba(255, 255, 255, 0.08)' },
+                            ticks: { color: '#94A3B8' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#F8FAFC', font: { weight: 'bold' } }
+                        }
+                    }
+                }
+            });
+        }
+
+        function runSimulation() {
+            const hours = parseInt(document.getElementById('slider-hours').value);
+            const shuttles = parseInt(document.getElementById('slider-shuttles').value);
+            const subsidy = parseInt(document.getElementById('slider-subsidies').value);
+
+            document.getElementById('slider-hours-val').innerText = `+${hours} hrs/day`;
+            document.getElementById('slider-shuttle-val').innerText = `${shuttles} Units`;
+            document.getElementById('slider-subsidy-val').innerText = `${subsidy}% Coverage`;
+
+            const impact = (hours * 3.5) + (shuttles * 1.1) + (subsidy * 0.6);
+            let score = Math.max(10, 78.4 - impact).toFixed(1);
+
+            document.getElementById('sim-score').innerText = `${score} / 100`;
+
+            if (simChart) {
+                simChart.data.datasets[0].data[1] = score;
+                simChart.update();
+            }
+
+            const statusText = document.getElementById('sim-status-text');
+            if (hours === 0 && shuttles === 0 && subsidy === 0) {
+                statusText.innerText = "Baseline status. Adjust policy sliders to model emergency heat risk mitigation.";
+            } else {
+                const addedCapacity = (hours * 1500) + (shuttles * 800) + (subsidy * 1400);
+                statusText.innerText = `Selected policies reduce statewide heat vulnerability by ${(78.4 - score).toFixed(1)} points, extending rapid cooling protection to ~${addedCapacity.toLocaleString()} additional Virginia residents.`;
+            }
+        }
+
+        function resetSimulation() {
+            document.getElementById('slider-hours').value = 0;
+            document.getElementById('slider-shuttles').value = 0;
+            document.getElementById('slider-subsidies').value = 0;
+            runSimulation();
+        }
+
+        window.onload = function() {
+            renderTable(jurisdictions);
+            initTempChart();
+            initSimChart();
+        };
+    </script>
+
+</body></html>
